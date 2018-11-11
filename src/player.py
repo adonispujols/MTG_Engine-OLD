@@ -1,5 +1,4 @@
-import hand
-import mana_pool
+from src import mana_pool, hand
 
 
 class Player:

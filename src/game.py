@@ -1,9 +1,10 @@
 import typing
-import stack
-import turn_actions
-import player as player_mod
-import card as card_mod
-
+from src import stack
+from src import turn_actions
+from src import player as player_mod
+from src import card as card_mod
+# XXX ^ should NOT import just for type checking (risks cyclic importing)
+# ^ we can't get around it atm, but beware!
 
 class Game:
     def __init__(self, players: typing.List[player_mod.Player], index):

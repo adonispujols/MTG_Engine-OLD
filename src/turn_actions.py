@@ -1,23 +1,69 @@
-# TODO
-START_METHODS = ()
+from src import game as game_mod
+from src import player as player_mod
 
 
-def start_next_step_or_phase(step_or_phase, game):
+def special_untap(game: game_mod.Game, first_player: player_mod.Player):
+    game.step_or_phase = 0
+    # XXX ^evil set? (along with rest of step_or_phase = x)
+    # at start, no one is active, so we must directly make first player active.
+    first_player.make_active()
+    game.untap_all_of_player(first_player.index())
+    upkeep(game)
+
+def untap(game):
+    # TODO
+    pass
+
+def upkeep(game):
+    # TODO
+    pass
+
+def draw(game):
+    # TODO
+    pass
+
+def pre_combat(game):
+    # TODO
+    pass
+
+def begin_combat():
+    # TODO
+    pass
+
+def declare_attackers(game):
+    # TODO
+    pass
+
+def declare_blockers(game):
+    # TODO
+    pass
+
+def first_strike_damage(game):
+    # TODO
+    pass
+
+def combat_damage(game):
+    # TODO
+    pass
+
+def end_combat(game):
+    # TODO
+    pass
+
+def post_combat(game):
+    # TODO
+    pass
+
+def end(game):
+    # TODO
+    pass
+
+def cleanup(game):
     # TODO
     pass
 
 
-def special_untap(game, first_player):
-    """
-
-    :type first_player: player.Player
-    """
-    game.step_or_phase = 0
-    # XXX ^evil set? (along with rest of step_or_phase = x)
-    # first_player.
-
-# store as tuple!!:
-
+# TODO store as tuple!!:
 # # list holding method names as strings
 # const start_methods = ["upkeep", "draw",
 # 		"pre_combat_phase_start", "begin_combat", "begin_combat",
@@ -25,16 +71,17 @@ def special_untap(game, first_player):
 # 		"combat_damage", "end_combat", "post_combat_phase_start",
 # 		"end", "cleanup", "untap"]
 #
+
+START_METHODS = (upkeep(), draw(), pre_combat(), begin_combat(), 
+
+def start_next_step_or_phase(step_or_phase, game):
+    # TODO
+    pass
+
 # func start_next_step_or_phase(step_or_phase, game):
 # 	call(start_methods[step_or_phase], game) # START ON UPKEEP, untap last
 #
-# func special_untap(game, first_player):
-# 	game.step_or_phase = 0
-# 	# XXX ^ evil set (along with rest of step_or_phase = x)
-# 	first_player.make_active()
-# 	game.get_active_player().untap
-# 	upkeep(game)
-#
+
 # func untap(game):
 # 	game.step_or_phase = 0
 # 	game.change_active_player_to_next()
