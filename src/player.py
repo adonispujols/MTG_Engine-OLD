@@ -17,9 +17,6 @@ class Player:
     def active(self):
         return self.active
 
-    def due_priority(self):
-        pass
-
     def has_priority(self):
         return self.has_priority
 

@@ -1,9 +1,15 @@
 class Hand:
     def __init__(self):
-        pass
+        self.hand = []
 
-    def remove(self, index):
-        pass
+    def size(self):
+        return len(self.hand)
 
     def add(self, card):
-        pass
+        self.hand.append(card)
+
+    def remove(self, index):
+        return self.hand.pop(index)
+
+    def get(self, index):
+        return self.hand[index]

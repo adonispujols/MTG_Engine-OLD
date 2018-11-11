@@ -6,6 +6,7 @@ from src import card as card_mod
 # XXX ^ should NOT import just for type checking (risks cyclic importing)
 # ^ we can't get around it atm, but beware!
 
+
 class Game:
     def __init__(self, players: typing.List[player_mod.Player], index):
         self.players = players
@@ -32,11 +33,6 @@ class Game:
             if player.active():
                 return player
 
-    def player_due_priority(self):
-        for player in self.players:
-            if player.due_priority():
-                return player
-
     def pass_priority(self, player):
         if not player.has_priority():
             raise RuntimeError("ERROR: Passed without priority. Player: ", player.index())
@@ -46,7 +42,7 @@ class Game:
             turn_actions.start_next_step_or_phase(self.step_or_phase, self)
         else:
             if not self.stack.empty():
-                self.stack.resolve()
+                self.stack.resolve_next()
             self.next_player(player.index()).gain_priority()
 
     def all_passed_no_actions(self, index):

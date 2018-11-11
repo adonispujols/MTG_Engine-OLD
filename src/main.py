@@ -1,3 +1,7 @@
+import random
+lst = [0, 1, 2, 3]
+random.shuffle(lst)
+print(lst)
 
 
 # when ready for tkinter:

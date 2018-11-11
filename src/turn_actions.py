@@ -4,7 +4,7 @@ from src import player as player_mod
 
 def special_untap(game: game_mod.Game, first_player: player_mod.Player):
     game.step_or_phase = 0
-    # XXX ^evil set? (along with rest of step_or_phase = x)
+    # XXX ^ evil set? (along with rest of step_or_phase = x)
     # at start, no one is active, so we must directly make first player active.
     first_player.make_active()
     game.untap_all_of_player(first_player.index())
@@ -79,10 +79,9 @@ def cleanup(game):
     untap(game)
 
 
-START_METHODS = (upkeep(), draw(), pre_combat(), begin_combat(),
-                 declare_attackers(), declare_blockers(), first_strike_damage(),
-                 combat_damage(), end_combat(), post_combat(), end(), cleanup(),
-                 untap())
+START_METHODS = (upkeep, draw, pre_combat, begin_combat, declare_attackers,
+                 declare_blockers, first_strike_damage, combat_damage,
+                 end_combat, post_combat, end, cleanup, untap)
 
 
 def start_next_step_or_phase(step_or_phase, game):
