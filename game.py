@@ -1,79 +1,77 @@
+import typing
+import stack
+import turn_actions
+import player as player_mod
+
+
 class Game:
-    def __init__(self, players, first_player):
+    def __init__(self, players: typing.List[player_mod.Player], index):
         self.players = players
-        self.first_player = first_player
-        # XXX should NOT hold first_player in memory (wasteful). how to get around it?
+        self.first_player_index = index
+        # XXX ^ should NOT hold 1st player index in memory (wasteful).
         self.step_or_phase = 0
-        self.passes_count = 0
+        self.passes = 0
         self.battlefield = []
-        for player in players:
+        for player in range(len(players)):
             self.battlefield.append([])
+        self.stack = stack.Stack()
 
-"""
-const TurnBasedActions = preload("turn_based_actions.gd")
+    def start_game(self):
+        turn_actions.special_untap(self, self.get_player(self.first_player_index))
 
-# Initializing member vars on object creation
-func _init(_players, _first_player):
-	var Stack = load("stack.gd")
-	# XXX ^ make class calls into constants?
-	# XXX ^ preload class calls?
-	stack = Stack.new()
+    def get_player(self, index):
+        return self.players[index]
 
-func start_game():
-	TurnBasedActions.special_untap_step_start(self, get_player(first_player))
+    def next_player(self, curr_index):
+        return self.get_player((curr_index + 1) % len(self.players))
 
-func get_player(player_index):
-	return players[player_index]
+    def active_player(self):
+        for player in self.players:
+            if player.active():
+                return player
 
-func get_active_player():
-	for player in players:
-		if player.is_active_player():
-			return player
+    def player_due_priority(self):
+        for player in self.players:
+            if player.due_priority():
+                return player
 
-func get_player_due_priority():
-	for player in players:
-		if player.is_due_priority():
-			return player
+    def pass_priority(self, player):
+        if not player.has_priority():
+            raise RuntimeError("ERROR: Passed without priority. Player: ", player.index())
+        player.lose_priority()
+        if self.all_passed_no_actions(player.index()) and self.stack.empty():
+            self.empty_mana_pools()
+            turn_actions.start_next_step_or_phase(self, self.step_or_phase)
+        else:
+            if not self.stack.empty():
+                self.stack.resolve()
+            self.next_player(player.index()).gain_priority()
 
-func pass_priority(player):
-	if !player.has_priority():
-		print("ERROR: Passed without priority. Player: ", player.index())
-		get_tree().quit()
-	player.lose_priority()
-	if all_players_passed_no_actions(player.index()) and stack.empty():
-		empty_mana_pools()
-		TurnBasedActions.start_next_step_or_phase(step_or_phase, this)
-	else:
-		if !stack.empty():
-			stack.resolve_next()
-		get_player((player.get_index + 1) % players.size()).gain_priority()
+    def all_passed_no_actions(self, index):
+        passed = False
+        if self.next_player(index).active():
+            if self.passes == len(self.players):
+                passed = True
+            self.passes = 0
+        else:
+            self.passes += 1
+        return passed
 
-func all_players_passed_no_actions(player_index):
-	var passed = false
-	if (get_player((player.get_index + 1) % players.size()).is_active_player()):
-		if passes_count == players.size():
-			passed = true
-		passes_count = 0
-	else:
-		passes_count += 1
+    def empty_mana_pools(self):
+        for player in self.players:
+            player.mana_pool.clear()
 
-func step_or_phase():
-	return step_or_phase
+    def step_or_phase(self):
+        return self.step_or_phase
 
-func change_active_player_to_next():
-	previous_active_player_index = get_active_player.get_index()
-	get_active_player.make_nonactive()
-	get_player((player.get_index + 1) % players.size()).make_active()
+    def change_active_player_to_next(self):
+        prev_active_index = self.active_player().index()
+        self.active_player().make_nonactive()
+        self.next_player(prev_active_index).make_active()
 
-func empty_mana_pools():
-	for player in players:
-		player.mana_pool.clear()
+    def get_permanents_of_player(self, index):
+        return self.battlefield[index]
 
-func get_permanents_of_player(player_index):
-	return battefield[player_index]
-
-func put_on_battlefield(card, player):
-	battefield[player.index()].append(card_object)
-	player.hand.remove(card.index())
-
-"""
+    def put_on_battlefield(self, card, player):
+        self.battlefield[player.index()].append(card)
+        player.hand.remove(card.index())
