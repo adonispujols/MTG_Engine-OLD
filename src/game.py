@@ -72,7 +72,6 @@ class Game:
 
     def put_on_battlefield(self, card, player):
         self.battlefield[player.index()].append(card)
-        player.hand.remove(card.index())
 
     def untap_all_of_player(self, index):
         for card in self.permanents_of_player(index):

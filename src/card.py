@@ -1,15 +1,23 @@
 class Card:
     def __init__(self):
-        # TODO
-        pass
+        self.tapped = False
 
-    def index(self):
-        # TODO
-        pass
+    def tapped(self):
+        return self.tapped
+
+    def tap(self):
+        if not self.tapped():
+            self.tapped = True
+            return True
+        else:
+            return False
 
     def untap(self):
-        # TODO
-        pass
+        if self.tapped:
+            self.tapped = False
+            return True
+        else:
+            return False
 
     def resolve(self):
         # TODO
@@ -104,23 +112,3 @@ class Card:
 # ^- could even share with Ability, too! (though they'll always require priority)
 # - return owner.has_priority()
 #
-# * is tapped?
-# ^- return if _tapped == true
-#
-# * tap:
-# - if not tapped,
-# -- tapped == true
-# -- return true
-# - else:
-# illegal tap! <- BUT DO NOT THROW ERROR: Return false!
-# some spells (like sleep), still do as much as they can!
-# https://www.mtgsalvation.com/forums/magic-fundamentals/magic-rulings/magic-
-# rulings-archives/276549-tapping-tapped-creatures
-#
-# * untap:
-# - if tapped:
-# -- tapped == false
-# -- return true
-# - else:
-# - illegal untap
-# ^- NO need to throw error, esp since this is always called by untap step.
