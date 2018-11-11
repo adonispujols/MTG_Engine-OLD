@@ -10,113 +10,73 @@ def special_untap(game: game_mod.Game, first_player: player_mod.Player):
     game.untap_all_of_player(first_player.index())
     upkeep(game)
 
-# func upkeep(game):
-# 	game.step_or_phase = 1
-# 	game.get_active_player.gain_priority()
-#
-# func draw(game):
-# 	game.step_or_phase = 2
-# 	game.get_active_player().draw(1)
-# 	game.get_active_player.gain_priority()
-#
-# func pre_combat_phase_start(game):
-#     game.step_or_phase = 3
-#     game.get_active_player.gain_priority()
-#
-# func begin_combat(game):
-#     game.step_or_phase = 4
-#     game.get_active_player.gain_priority()
-#
-# func declare_attackers(game):
-#     game.step_or_phase = 5
-#     game.get_active_player.gain_priority()
-#
-# func declare_blockers(game):
-#     game.step_or_phase = 6
-#     game.get_active_player.gain_priority()
-#
-# func first_strike_damage(game):
-#     game.step_or_phase = 7
-#     game.get_active_player.gain_priority()
-#
-# func combat_damage(game):
-#     game.step_or_phase = 8
-#     game.get_active_player.gain_priority()
-#
-# func end_combat(game):
-#     game.step_or_phase = 9
-#     game.get_active_player.gain_priority()
-#
-# func post_combat_phase_start(game):
-#     game.step_or_phase = 10
-#     game.get_active_player.gain_priority()
-#
-# func end(game):
-#     game.step_or_phase = 11
-#     game.get_active_player.gain_priority()
-#
-# func cleanup(game):
-#     game.step_or_phase = 12
-#     untap(game)
-# func untap(game):
-# 	game.step_or_phase = 0
-# 	game.change_active_player_to_next()
-# 	game.untap_all_of_player(get_active_player().index())
-# 	upkeep(game)
 
-def untap(game):
-    # TODO
+def untap(game: game_mod.Game):
     game.step_or_phase = 0
     game.change_active_player_to_next()
-    game.untap_all_of_player(game.active_player().)
+    game.untap_all_of_player(game.active_player().index())
+    upkeep(game)
+
 
 def upkeep(game):
-    # TODO
-    pass
+    game.step_or_phase = 1
+    game.active_player().gain_priority()
 
-def draw(game):
-    # TODO
-    pass
+
+def draw(game: game_mod.Game):
+    game.step_or_phase = 2
+    game.active_player().draw(1)
+    game.active_player().gain_priority()
+
 
 def pre_combat(game):
-    # TODO
-    pass
+    game.step_or_phase = 3
+    game.active_player().gain_priority()
 
-def begin_combat():
-    # TODO
-    pass
+
+def begin_combat(game):
+    game.step_or_phase = 4
+    game.active_player().gain_priority()
+
 
 def declare_attackers(game):
-    # TODO
-    pass
+    game.step_or_phase = 5
+    game.active_player().gain_priority()
+
 
 def declare_blockers(game):
-    # TODO
-    pass
+    game.step_or_phase = 6
+    game.active_player().gain_priority()
+
 
 def first_strike_damage(game):
-    # TODO
-    pass
+    game.step_or_phase = 7
+    game.active_player().gain_priority()
+
 
 def combat_damage(game):
-    # TODO
-    pass
+    game.step_or_phase = 8
+    game.active_player().gain_priority()
+
 
 def end_combat(game):
-    # TODO
-    pass
+    game.step_or_phase = 9
+    game.active_player().gain_priority()
+
 
 def post_combat(game):
-    # TODO
-    pass
+    game.step_or_phase = 10
+    game.active_player().gain_priority()
+
 
 def end(game):
-    # TODO
-    pass
+    game.step_or_phase = 11
+    game.active_player().gain_priority()
+
 
 def cleanup(game):
-    # TODO
-    pass
+    game.step_or_phase = 12
+    untap(game)
 
 
 START_METHODS = (upkeep(), draw(), pre_combat(), begin_combat(),
