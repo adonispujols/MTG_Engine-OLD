@@ -4,3 +4,6 @@ class Card:
 
     def index(self):
         pass
+
+    def untap(self):
+        pass

@@ -51,19 +51,15 @@ class Player:
 
     def draw(self, amount):
         for i in range(amount):
-            self.hand(self.deck.remove_top())
+            self.hand.add(self.deck.remove_top())
 
-# func draw(amount):
-# 	for x in range(amount):
-#
-# func untap_all_permanents():
-# 	for card in game.get_permanents_of_player(index):
-# 		card.untap()
-#
-# func pay_costs(costs):
-# 	for cost in costs:
-# 		if !cost.pay():
-# 			print("ERROR: Failed to pay cost. Player: ", player.index())
-# 			get_tree().quit()
-# 			# XXX useful to know WHICH cost triggered this
-# 	return true
+    # def untap_all_permanents(self, permanents):
+    #     for card in permanents:
+    #         card.untap()
+
+    def pay_costs(self, costs):
+        for cost in costs:
+            if not cost.pay():
+                raise RuntimeError("ERROR: Failed to pay cost. Player: ", self.index())
+                # XXX useful to know WHICH cost triggered this
+        return True

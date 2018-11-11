@@ -2,6 +2,7 @@ import typing
 import stack
 import turn_actions
 import player as player_mod
+import card as card_mod
 
 
 class Game:
@@ -11,7 +12,7 @@ class Game:
         # XXX ^ should NOT hold 1st player index in memory (wasteful).
         self.step_or_phase = 0
         self.passes = 0
-        self.battlefield = []
+        self.battlefield: typing.List[typing.List[card_mod.Card]] = []
         for player in range(len(players)):
             self.battlefield.append([])
         self.stack = stack.Stack()
@@ -41,7 +42,7 @@ class Game:
         player.lose_priority()
         if self.all_passed_no_actions(player.index()) and self.stack.empty():
             self.empty_mana_pools()
-            turn_actions.start_next_step_or_phase(self, self.step_or_phase)
+            turn_actions.start_next_step_or_phase(self.step_or_phase, self)
         else:
             if not self.stack.empty():
                 self.stack.resolve()
@@ -69,9 +70,13 @@ class Game:
         self.active_player().make_nonactive()
         self.next_player(prev_active_index).make_active()
 
-    def get_permanents_of_player(self, index):
+    def permanents_of_player(self, index):
         return self.battlefield[index]
 
     def put_on_battlefield(self, card, player):
         self.battlefield[player.index()].append(card)
         player.hand.remove(card.index())
+
+    def untap_all_of_player(self, index):
+        for card in self.permanents_of_player(index):
+            card.untap()

@@ -5,5 +5,5 @@ class Hand:
     def remove(self, index):
         pass
 
-    def add(self):
+    def add(self, card):
         pass
