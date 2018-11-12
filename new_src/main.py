@@ -1,60 +1,34 @@
 import typing
+import random
 from new_src import player as player_mod
 from new_src import deck
 from new_src import card as card_mod
 from new_src import hand
-import random
 
-
-# XXX hard setting attributes is not ideal.
-# ^ once finished, we'll turn what should be params into params, and what
-# ^ should be wrapped in "add" methods, be wrapped
-# ^ OR create the object in self.foo, if needed
-
-# we need two players (player "1" is user, player "2" is ai (typically))
-# BUT in code they are referred to by player_index, or nth player - 1
-player_1 = player_mod.Player()
-player_2 = player_mod.Player()
-
-# these players are supposed to have decks
-deck_1 = deck.Deck()
-deck_2 = deck.Deck()
-
-# lets give it to them
-player_1.deck = deck_1
-player_2.deck = deck_2
-
-# these decks typically have 60 cards
-# we'll just fill them with thuds
-for x in range(60):
-    # need to make two separate, lest both decks will refer to same object!
-    test_card1 = card_mod.Card("one")
-    test_card2 = card_mod.Card("two")
-    # decks need to store cards in an array
-    # prob good to define how we add to this array
-    player_1.deck.add_top(test_card1)
-    player_2.deck.add_top(test_card2)
-
-# decks are supposed to be shuffled
-player_1.deck.shuffle()
-player_2.deck.shuffle()
-
-# randomly decide who chooses to first
-# XXX ^ in a match, loser of last game chooses
-# randrange is [start, stop) (exclusive)
-
-
-player_to_choose = random.randrange(2)
-
-# need to give that player a choice, now, no?
-# !!! hold on, who gets to choose? <- only give option to player choosing.
-# ^ if user (player_1), ask for input. If ai (player_2) print info, put
-# ^ have it automatically choose (no chance for input) UNLESS debug is on
-# ^ Otherwise, ask for input as if you /were/ player 2
-# ^ same argument if player_1 is ALSO set to ai <- save for later
-# XXX don't even think about multiplayer. just focus on one v one
-# ^ we can expand later!
 debug = True
+# player "1", the user, has index = 0, or nth player - 1
+# player "2", or the ai (unless debug is on), has index = 1
+players = [player_mod.Player(), player_mod.Player()]
+
+
+players[0].deck = deck.Deck()
+players[1].deck = deck.Deck()
+# ^ XXX hard setting attributes is not ideal.
+# ^ we'll refractor as necessary after we're done
+
+# fill each deck with 60 cards
+for x in range(60):
+    # each card must be a new, separate object,
+    # else both decks will refer to same object!
+    players[0].deck.add_top(card_mod.Card("one"))
+    players[1].deck.add_top(card_mod.Card("two"))
+
+for player in players:
+    player.deck.shuffle()
+
+# XXX in a match, loser of last game chooses
+# randrange is [start, stop) (exclusive)
+player_to_choose = random.randrange(len(players))
 
 
 def player_choose_first(player_index):
@@ -70,32 +44,21 @@ def player_choose_first(player_index):
         first = int(choice) - 1
     else:
         # ai is making choice (by default, chooses itself)
-        # TODO remember to update code for multiplayer!:
-        first = 1
+        first = player_index
     print("P" + str(first + 1), "goes first.")
     return first
 
 
 first_player = player_choose_first(player_to_choose)
 
-# we'll continue adding AI options for future!
+# TODO continue adding AI options in future!
+# TODO keep code compatible code with multiplayer!:
 
-# players start at 20 life
-# * set that as default for players
-
-# each player draws equal to starting hand size (default 7)
-# * set default hand size at 7 for players
-# so, each player have a hand to "draw" to:
 hand_1 = hand.Hand()
 hand_2 = hand.Hand()
-# XXX ^ could just put constructed object directly in to hand (no alias)
-
-# let's give it to them
 player_1.hand = hand_1
 player_2.hand = hand_2
 
-# need to be able to draw. players "Draw" cards
-# ^ defined this for player
 for n in range(player_1.maximum_hand_size):
     player_1.draw()
 for n in range(player_2.maximum_hand_size):

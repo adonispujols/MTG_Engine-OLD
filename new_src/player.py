@@ -16,7 +16,6 @@ class Player:
         self.maximum_hand_size = 7
         self.hand = None
         self.active = False
-        # self.priority = False
 
     def draw(self):
         self.hand.add(self.deck.remove_top())
@@ -29,13 +28,3 @@ class Player:
 
     def is_active(self):
         return self.active
-
-    # def give_priority(self):
-    #     # sba's are checked
-    #     self.priority = True
-    #
-    # def lose_priority(self):
-    #     self.priority = False
-    #
-    # def has_priority(self):
-    #     return self.priority
