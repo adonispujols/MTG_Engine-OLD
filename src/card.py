@@ -1,12 +1,32 @@
-class Card:
-    def __init__(self):
+import abc
+from src import restrictions
+from src import player as player_mod
+# Card
+# Params:
+# * Defined in script:
+# - Name, Card Type,
+# * Defined in game:
+# - Owner, game
+
+
+class Card(abc.ABC):
+    def __init__(self, name, card_type, player: player_mod.Player):
+        # TODO
+        super().__init__()
+        self.name = name
+        self.card_type = card_type
+        self.super_type = None
+        self.owner = player
         self.tapped = False
+        # ALL cards + abilities have default sorcery speed restriction.
+        self.restrictions = [restrictions.sorcery_speed]
+        # XXX NEED TO FIGURE OUT CURRENT ZONE/RESTRICTING PLAY TO HAND (for now):
 
     def tapped(self):
         return self.tapped
 
     def tap(self):
-        if not self.tapped():
+        if not self.tapped:
             self.tapped = True
             return True
         else:
@@ -19,29 +39,33 @@ class Card:
         else:
             return False
 
-    def resolve(self):
-        # TODO
+    @abc.abstractmethod
+    def on_play(self):
         pass
 
-# Card
-# Params:
-# * Defined in script:
-# - Name, Card Type,
-# * Defined in game:
-# - Owner, game
+    # XXX can't enforce params on abstract because they're overwritten!
+    # ^ only remove until you remember!
+    @abc.abstractmethod
+    def resolve(self):
+        pass
+
+    def met_priority_or_special_restrictions(self):
+        # overwritten by subclasses
+        return self.owner.has_priority()
+
+    def met_restrictions(self):
+        for restriction in restrictions:
+            if not restriction(self):
+                return False
+            return True
+
 # Props:
 # * Name
 # * Supertype(s) (Basic, Legendary,...)
 # * Cardtype(s) (Creature, Land, ...)
-# ^- some cards may not even have a card type
 # * Subtype(s) (Tribe/class for creatures, aura for enchantments, ...)
 # ^- Not every card NEEDS super or subtypes, but may gain them.
 # ^- Should we keep as null fields here, or only add if relevant?
-# * Restrictions = [restrictions.sorcery_speed()]
-# ^- actually [funcref(restrictions, "sorcery_speed")] for godot.
-# ^- restrictions to cast spell or play land (well, not sure if there's any play land resitrcitons)
-# ^ ALL cards + abilities inherit default sorcery speed restriction.
-# NEED TO FIGURE OUT CURRENT ZONE/RESTRICTING PLAY TO HAND (for now):
 # * Tapped?
 # ^- tech not relevant in non-permanent spells. Should we still keep?
 # ^- does manifesting force us to care about this for sorceries/instants, still?
@@ -81,34 +105,5 @@ class Card:
 # -- debug message saying you can't play it?
 # ^-- shouldn't just throw error if we didn't even begin the process
 #
-# * resolve():
-# ^- The effects of playing lands and other special actions are
-# technically NOT referred to as “resolving,” but we’ll
-# refer to it in our code
-# ^^- same effect, but do mark in code this potential
-# inconsistency with rules.
-# - must implement
-# WHY IS THIS FORCE TO IMPLEMENT? oh. they just resolve immediately
-#
-# * met_restrictions
-# - checks if all restrictions of the object have been meet.
-# - for restriction in restrictions:
-# -- if !restriction(this card):
-# ^-- return false
-# - return true
-# ^- if we failed to meet any, it'll return false.
-# ^- else, we'll reach this return true.
-# ^- all restrictions are boolean methods that check for
-# satisfaction upon call.
-#
-# * on_play(card_index)
-# - must implement
-#
-# * met_priority_or_special_restrictions():
-# - basic, hands-down virtually no exceptions restriction to play/cast something.
-# - not to be confused with timing or void or null rod or etc restrictions!
-# - Either meet priority restriction, or some special restriction
-# (mostly just for mana abilities).
-# ^- could even share with Ability, too! (though they'll always require priority)
-# - return owner.has_priority()
-#
+
+

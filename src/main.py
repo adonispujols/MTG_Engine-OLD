@@ -1,3 +1,26 @@
+import abc
+
+
+class Foo(abc.ABC):
+    def __init__(self):
+        super().__init__()
+
+    @abc.abstractmethod
+    def bar(self, x):
+        print(x, "basic functionality")
+
+
+class Test(Foo):
+    def __init__(self):
+        super().__init__()
+
+    def bar(self):
+        super().bar(45)
+        print("legit")
+
+
+f = Test()
+f.bar()
 
 # when ready for tkinter:
 # import tkinter as tk
