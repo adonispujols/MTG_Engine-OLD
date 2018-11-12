@@ -54,6 +54,7 @@ def shuffle_all():
 
 def choose_first_player(index):
     print("P" + str(index + 1) + ", who goes first?")
+
     # XXX ALWAYS define funcs locally they'll ONLY be used in that context!
     # ask the user for input
     def user_chooses_first_player():
@@ -65,30 +66,21 @@ def choose_first_player(index):
                 print("ERROR: Invalid int")
             else:
                 if 1 <= choice <= len(players):
-                    first = int(choice) - 1
-                    break
+                    return choice - 1
                 else:
                     print("ERROR: Invalid Player #")
-
-    # ask player_1, by default is user
     if index == 0:
-
-    elif debug:
-        # user controls ai, ask for input like above
-        while True:
-            try:
-                choice = int(input("Player #: "))
-            except ValueError:
-                print("ERROR: Invalid int")
-            else:
-                if 1 <= choice <= len(players):
-                    first = int(choice) - 1
-                    break
-                else:
-                    print("ERROR: Invalid Player #")
+        if not ai_only:
+            first = user_chooses_first_player()
+        else:
+            # ai is making choice (by default, chooses itself)
+            first = index
     else:
-        # ai is making choice (by default, chooses itself)
-        first = index
+        if debug:
+            first = user_chooses_first_player()
+        else:
+            # ai is making choice (by default, chooses itself)
+            first = index
     print("P" + str(first + 1), "goes first.")
     return first
 
@@ -117,21 +109,21 @@ def untap_all_of_active():
         card.untap()
 
 
-def give_player_priority(player_index):
+def give_player_priority(index):
     if passes.count() != len(players):
-        if player_index == 0:
+        if index == 0:
             # ask player_1, or user, for input
             choice = input("P1, Press enter to pass")
             # if just pressed enter (entered no input)
             if not choice:
                 passes.inc()
-                give_player_priority(player_index + 1)
+                give_player_priority(index + 1)
         elif debug:
             # ask user controlling ai for input (same as above)
-            choice = input("P" + str(player_index + 1) + ", Press enter to pass")
+            choice = input("P" + str(index + 1) + ", Press enter to pass")
             if not choice:
                 passes.inc()
-                give_player_priority((player_index + 1) % len(players))
+                give_player_priority((index + 1) % len(players))
         else:
             # TODO continue adding AI options in future!
             pass
@@ -164,6 +156,7 @@ def start_next_step_or_phase(index):
     START_METHODS[index]()
 
 
+# XXX try to make this share code with untap
 def first_untap_of_game():
     print("Start of First Untap Step")
     step_or_phase.index = 0
@@ -274,13 +267,15 @@ def cleanup():
     untap()
 
 
-# TODO keep code compatible code with multiplayer + ai vs ai!:
+# TODO keep code compatible code with multiplayer & ai vs ai!:
 
 # initializations (for set up)
-debug = True  # user controls AI, if true
-ai_only = False  # AI controls all players (including player 1)
-# player "1", the user y default, has index = 0, or nth player - 1
-# player "2", or the ai (unless debug is on), has index = 1
+# user controls all players (including AI), if true
+debug = True
+# AI controls all players (including player 1), if true
+ai_only = False
+# player 1, the user by default, has index = 0
+# player 2+, the ai by default, has index = nth player - 1
 players = [player_mod.Player(), player_mod.Player()]
 # XXX hard setting attributes is not ideal. ( we'll refractor once done)
 players[0].deck = deck.Deck()
