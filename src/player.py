@@ -4,6 +4,7 @@ from src import mana_pool, hand
 class Player:
     def __init__(self, deck, index):
         self.deck = deck
+        # XXX should just have dictionary with player id as key (simpler)
         self.index = index
         self.hand = hand.Hand()
         self.mana_pool = mana_pool.ManaPool()
