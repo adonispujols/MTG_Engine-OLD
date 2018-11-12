@@ -5,36 +5,35 @@ from new_src import deck
 from new_src import card as card_mod
 from new_src import hand
 
+# TODO keep code compatible code with multiplayer!:
 debug = True
+
 # player "1", the user, has index = 0, or nth player - 1
 # player "2", or the ai (unless debug is on), has index = 1
 players = [player_mod.Player(), player_mod.Player()]
 
-
 players[0].deck = deck.Deck()
 players[1].deck = deck.Deck()
-# ^ XXX hard setting attributes is not ideal.
-# ^ we'll refractor as necessary after we're done
-
-# fill each deck with 60 cards
-for x in range(60):
-    # each card must be a new, separate object,
-    # else both decks will refer to same object!
-    players[0].deck.add_top(card_mod.Card("one"))
-    players[1].deck.add_top(card_mod.Card("two"))
-
-for player in players:
-    player.deck.shuffle()
-
-# XXX in a match, loser of last game chooses
-# randrange is [start, stop) (exclusive)
-player_to_choose = random.randrange(len(players))
+# ^ XXX hard setting attributes is not ideal. ( we'll refractor once done)
 
 
-def player_choose_first(player_index):
-    first = 0
-    print("P" + str(player_index + 1), ", who goes first?")
-    if player_index == 0:
+def fill_decks():
+    # fill each deck with 60 cards
+    for x in range(60):
+        # each card must be a new, separate object,
+        # else both decks will refer to same object!
+        players[0].deck.add_top(card_mod.Card("one"))
+        players[1].deck.add_top(card_mod.Card("two"))
+
+
+def shuffle_all():
+    for player in players:
+        player.deck.shuffle()
+
+
+def player_choose_first(index):
+    print("P" + str(index + 1), ", who goes first?")
+    if index == 0:
         # ask player_1, or user, for input
         choice = input("Player Int: ")
         first = int(choice) - 1
@@ -44,51 +43,47 @@ def player_choose_first(player_index):
         first = int(choice) - 1
     else:
         # ai is making choice (by default, chooses itself)
-        first = player_index
+        first = index
     print("P" + str(first + 1), "goes first.")
     return first
 
 
-first_player = player_choose_first(player_to_choose)
+def initial_draw():
+    for player in players:
+        for n in range(player.maximum_hand_size):
+            player.draw()
+
+
+fill_decks()
+shuffle_all()
+
+
+
 
 # TODO continue adding AI options in future!
-# TODO keep code compatible code with multiplayer!:
+# XXX in a match, loser of last game chooses
+# randrange is [start, stop) (exclusive)
+first_player = player_choose_first(random.randrange(len(players)))
 
-hand_1 = hand.Hand()
-hand_2 = hand.Hand()
-player_1.hand = hand_1
-player_2.hand = hand_2
-
-for n in range(player_1.maximum_hand_size):
-    player_1.draw()
-for n in range(player_2.maximum_hand_size):
-    player_2.draw()
-
-# very useful to give these objects a to string (repr) for time + safety
-# ^ XXX Use ID when comparing objects, we'll be replacing repr, now
-print("P1 HAND:\n", player_1.hand, "\nP1 DECK:\n", player_1.deck)
-print("P2: HAND:\n", player_2.hand, "\nP2 DECK:\n", player_2.deck)
+players[0].hand = hand.Hand()
+players[1].hand = hand.Hand()
 
 
-# we need to set up a structure for our various steps and phases
-# let's go through steps one by one:
-# start of game, go to untap step
-# untap all of "active player's" permanents
-# ^ so we need: concept of active player, and "permanents"
-# ^ also need: public zone battlefield for "permanents", distinguishing between
-# ^ what card belongs to whom (just owner for now, no need for controller)
-# ^ being "active" is a property of a player
 
-# having players in array makes assigning who's who without many ifs
-players = [player_1, player_2]
+initial_draw()
 
-# set 1st player to active player
-players[first_player].make_active()
 
-# first, make battlefield to hold the permanents to untap
-# ^ all cards in battlefield[player_index] pertain to that player
+def print_hand_and_decks():
+    # some objects have __repr__ defined (to simplify printing)
+    # XXX Use ID when comparing objects (as you should)
+    for i, player in enumerate(players):
+        print("P", i, "HAND:\n", player.hand, "\nP", i, "DECK:\n", player.deck)
+
+
+print_hand_and_decks()
+
+# cards in battlefield[player_index] pertain to that player
 battlefield: typing.List[typing.List[card_mod.Card]] = []
-# XXX need to warp in fuction, lest our player var sticks around
 
 
 def create_battlefield():
@@ -98,12 +93,6 @@ def create_battlefield():
 
 create_battlefield()
 
-
-# XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
-# def active_player():
-#     for player in players:
-#         if player.is_active():
-#             return player
 
 # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
 def active_index():
@@ -120,13 +109,6 @@ def active_player():
 def untap_all_of_active():
     for card in battlefield[active_index()]:
         card.untap()
-
-
-untap_all_of_active()
-
-# then we move on to upkeep
-# active player receives "priority" <- what's that?
-# for now, it's the game giving you the right to "pass priority"
 
 
 # TODO need to take into account actions taken in between passes!
@@ -180,21 +162,19 @@ class StepOrPhase:
 
 step_or_phase = StepOrPhase()
 
-# give active player priority
-give_player_priority(active_index())
-
-
 def start_next_step_or_phase(index):
-    # don't want lots of ifs, so let's have a dictionary and methods
     START_METHODS[index]()
 
-# def special_untap(game: game_mod.Game, first_player: player_mod.Player):
-#     step_or_phase = 0
-#     # XXX ^ evil set? (along with rest of step_or_phase = x)
-#     # at start, no one is active, so we must directly make first player active.
-#     first_player.make_active()
-#     untap_all_of_player(first_player.index())
-#     upkeep(game)
+
+def special_untap():
+    print("Start of First Untap Step")
+    step_or_phase.index = 0
+    # ^ XXX evil sets? (along with rest of step_or_phase.index = x)
+    # at start, no one is active, so we must directly make first player active.
+    # set 1st player to active player
+    players[first_player].make_active()
+    untap_all_of_active()
+    upkeep()
 
 
 def untap():
@@ -220,6 +200,7 @@ def upkeep():
 
 
 def draw():
+    # TODO must skip if 1st player's 1st draw (unless free for all)
     print("Start of Draw Step")
     step_or_phase.index = 2
     print("Draw step: Draw")
@@ -294,11 +275,6 @@ def cleanup():
 START_METHODS = (upkeep, draw, pre_combat, begin_combat, declare_attackers,
                  declare_blockers, first_strike_damage, combat_damage,
                  end_combat, post_combat, end, cleanup, untap)
-
-
-# after succesive passing of priority, we ought to move to next step or phase
-# ^ time to wrap in method for easy calling from there
-# ^ need to keep track of it now, it seems
 
 
 # TEST: 10 MINUTES HARD CODING QUICK COMMENTS LET'S GO!
