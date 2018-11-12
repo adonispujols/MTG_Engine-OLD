@@ -24,8 +24,8 @@ class Player:
     def make_active(self):
         self.active = True
 
-    # def make_inactive(self):
-    #     self.active = False
+    def make_inactive(self):
+        self.active = False
 
     def is_active(self):
         return self.active

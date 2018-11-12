@@ -149,6 +149,10 @@ def active_index():
             return i
 
 
+def active_player():
+    return players[active_index()]
+
+
 # untap all of active player's permanents
 def untap_all_of_active():
     for card in battlefield[active_index()]:
@@ -178,6 +182,7 @@ class Passes:
 
 passes = Passes()
 
+
 def give_player_priority(player_index):
     if passes.count() != len(players):
         if player_index == 0:
@@ -198,97 +203,129 @@ def give_player_priority(player_index):
         start_next_step_or_phase(step_or_phase)
 
 
-# since we are in untap at this point, our step/phase is 0
-step_or_phase = 0
+# again, awkward creation of object
+# TODO seems like we need to collect these into a "game" object or so
+# ^ XXX HOWEVER, don't assume game should inherit the other methods!!
+class StepOrPhase:
+    def __init__(self):
+        # So far this is hard set, can it be better?
+        self.index = 0
+
+    def get_index(self):
+        return self.index
+
+
+step_or_phase = StepOrPhase()
 
 # give active player priority
 give_player_priority(active_index())
 
 
-def start_next_step_or_phase(step_or_phase, game):
-
-
-def start_next_step_or_phase(self, index):
+def start_next_step_or_phase(index):
     # don't want lots of ifs, so let's have a dictionary and methods
-    START_METHODS[step_or_phase]()
+    START_METHODS[index]()
 
 # def special_untap(game: game_mod.Game, first_player: player_mod.Player):
-#     game.step_or_phase = 0
+#     step_or_phase = 0
 #     # XXX ^ evil set? (along with rest of step_or_phase = x)
 #     # at start, no one is active, so we must directly make first player active.
 #     first_player.make_active()
-#     game.untap_all_of_player(first_player.index())
+#     untap_all_of_player(first_player.index())
 #     upkeep(game)
 
 
-def untap(game: game_mod.Game):
-    game.step_or_phase = 0
-    game.change_active_player_to_next()
-    game.untap_all_of_player(game.active_player().index())
-    upkeep(game)
+def untap():
+    print("Start of Untap Step")
+    step_or_phase.index = 0
+    # change active player to the next
+    prev_active_index = active_index()
+    active_player().make_inactive()
+    players[(prev_active_index + 1) % len(players)].make_active()
+    # XXX caling active_index is slightly in efficient, but HEY,
+    # ^ there might be a corner case we need to cover
+    # ALWAYS FAVOR SECURITY/CLARITY OVER EFFICIENCY (to reasonable limits)
+    print("Active Player:", active_index())
+    print("Untap Step: Untap")
+    untap_all_of_active()
+    upkeep()
 
 
-def upkeep(game):
-    game.step_or_phase = 1
-    game.active_player().gain_priority()
+def upkeep():
+    print("Start of Upkeep Step")
+    step_or_phase.index = 1
+    give_player_priority(active_index())
 
 
-def draw(game: game_mod.Game):
-    game.step_or_phase = 2
-    game.active_player().draw(1)
-    game.active_player().gain_priority()
+def draw():
+    print("Start of Draw Step")
+    step_or_phase.index = 2
+    print("Draw step: Draw")
+    active_player().draw()
+    give_player_priority(active_index())
 
 
-def pre_combat(game):
-    game.step_or_phase = 3
-    game.active_player().gain_priority()
+def pre_combat():
+    print("Start of Precombat Main Phase")
+    step_or_phase.index = 3
+    give_player_priority(active_index())
 
 
-def begin_combat(game):
-    game.step_or_phase = 4
-    game.active_player().gain_priority()
+def begin_combat():
+    print("Start of Beginning of Combat Step")
+    step_or_phase.index = 4
+    give_player_priority(active_index())
 
 
-def declare_attackers(game):
-    game.step_or_phase = 5
-    game.active_player().gain_priority()
+def declare_attackers():
+    print("Start of Declare Attackers Step")
+    # TODO need to skip to end if no attackers declared
+    step_or_phase.index = 5
+    give_player_priority(active_index())
 
 
-def declare_blockers(game):
-    game.step_or_phase = 6
-    game.active_player().gain_priority()
+def declare_blockers():
+    print("Start of Declare Blockers Step")
+    step_or_phase.index = 6
+    give_player_priority(active_index())
 
 
-def first_strike_damage(game):
-    game.step_or_phase = 7
-    game.active_player().gain_priority()
+def first_strike_damage():
+    print("Start of First Strike Damage Step")
+    # TODO need to skip to combat damage if no creatures wih first strike
+    # ^ on either side of the field
+    step_or_phase.index = 7
+    give_player_priority(active_index())
 
 
-def combat_damage(game):
-    game.step_or_phase = 8
-    game.active_player().gain_priority()
+def combat_damage():
+    print("Start of Combat Damage Step")
+    step_or_phase.index = 8
+    give_player_priority(active_index())
 
 
-def end_combat(game):
-    game.step_or_phase = 9
-    game.active_player().gain_priority()
+def end_combat():
+    print("Start of End of Combat Step")
+    step_or_phase.index = 9
+    give_player_priority(active_index())
 
 
-def post_combat(game):
-    game.step_or_phase = 10
-    game.active_player().gain_priority()
+def post_combat():
+    print("Start of Postcombat Main Phase")
+    step_or_phase.index = 10
+    print("Step or Phase:", step_or_phase.index)
+    give_player_priority(active_index())
 
 
-def end(game):
-    game.step_or_phase = 11
-    game.active_player().gain_priority()
+def end():
+    print("Start of End Step")
+    step_or_phase.index = 11
+    give_player_priority(active_index())
 
 
-def cleanup(game):
-    game.step_or_phase = 12
-    untap(game)
-
-
+def cleanup():
+    print("Start of Cleanup Step")
+    step_or_phase.index = 12
+    untap()
 
 
 START_METHODS = (upkeep, draw, pre_combat, begin_combat, declare_attackers,
