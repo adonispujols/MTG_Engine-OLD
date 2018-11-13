@@ -3,10 +3,13 @@ from new_src import step_or_phase
 
 class Game:
     def __init__(self):
+        # XXX only use _ to indicate internally used field/method.
+        # ^ I.e., just a helper var/function that has NO USE outside of it.
+        # ^ Always assume that, then make public if wrong!
         self._debug = True
         self._ai_only = False
         # private since we only need each player, NOT players[]
-        self.players = []
+        self._players = []
         self._battlefield = []
         # XXX Better to cluster functions to a module, then clutter
         # ^ this namespace with functions related ONLY to that object!
@@ -24,10 +27,6 @@ class Game:
 
     def ai_only(self):
         return self._ai_only
-
-    def players(self):
-        # return generator over players[]
-        return (player for player in self._players)
 
     def shuffle_all(self):
         for player in self.players():

@@ -7,12 +7,13 @@ from new_src import hand
 from new_src import stack as stack_mod
 
 
-# TODO If refactoring becomes a big time sink, start using @properties!
-# TODO Last design failed because you thought too much about "what" and not "how"
+# XXX Always assume private field/method, then make public if need to expose.
+# XXX Never use straight getters/setters <- use properties!
+# XXX Last design failed because you thought too much about "what" and not "how"
 # ^ Don't guess ahead of time what's needed! Find out by trying to do it!
-# TODO keep code compatible code with multiplayer & ai vs ai!
-# TODO Always let code fail gracefully on invalid input (if reversible)!
-# TODO Stay Pythonic! Throw exceptions on actual errors, rather than check ahead!
+# XXX Keep code compatible code with multiplayer & ai vs ai!
+# XXX Always let code fail gracefully on invalid input (if reversible)!
+# XXX Stay Pythonic! Throw exceptions on actual errors, rather than check ahead!
 # XXX Try generalizing ai behavior to a script or so?
 # XXX Maintain a complete, solid CLI to depend on during GUI dev.
 # ^ This is ALWAYS our main focus, with ports made to GUI when ready.
