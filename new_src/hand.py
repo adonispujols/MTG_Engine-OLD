@@ -1,9 +1,9 @@
 class Hand:
     def __init__(self):
-        self.hand = []
+        self._hand = []
 
     def __repr__(self):
-        return str(self.hand)
+        return str(self._hand)
 
     def add(self, card):
-        self.hand.append(card)
+        self._hand.append(card)

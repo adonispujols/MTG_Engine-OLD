@@ -3,19 +3,16 @@ import random
 
 class Deck:
     def __init__(self):
-        self.deck = []
+        self._deck = []
 
     def __repr__(self):
-        return str(self.deck)
+        return str(self._deck)
 
     def add_top(self, card):
-        self.deck.append(card)
+        self._deck.append(card)
 
     def shuffle(self):
-        random.shuffle(self.deck)
+        random.shuffle(self._deck)
 
     def remove_top(self):
-        return self.deck.pop()
-
-    def to_string(self):
-        return str(self.deck)
+        return self._deck.pop()

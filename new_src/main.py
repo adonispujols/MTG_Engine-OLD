@@ -7,6 +7,7 @@ from new_src import hand
 from new_src import stack as stack_mod
 
 
+# TODO If refactoring becomes a big time sink, start using @properties!
 # TODO Last design failed because you thought too much about "what" and not "how"
 # ^ Don't guess ahead of time what's needed! Find out by trying to do it!
 # TODO keep code compatible code with multiplayer & ai vs ai!
@@ -107,7 +108,7 @@ def choose_first_player(index):
 
 def initial_draw():
     for player in players:
-        for n in range(player.get_max_hand_size()):
+        for n in range(player.max_hand_size()):
             player.draw()
 
 
@@ -329,7 +330,7 @@ ai_only = False
 # player 1, the user by default, has index = 0
 # player 2+, the ai by default, has index = nth player - 1
 players = [player_mod.Player(), player_mod.Player()]
-# XXX hard setting attributes is not ideal. ( we'll refractor once done)
+# XXX hard setting attributes is not ideal. ( we'll refactor once done)
 players[0].deck = deck.Deck()
 players[0].hand = hand.Hand()
 players[1].deck = deck.Deck()
@@ -364,7 +365,7 @@ stack = stack_mod.Stack()
 # TODO start with playing a land!
 # ^ literally just straight up think about how, you would go about playing a land.
 # ^ DO NOT WORRY about efficiency/super abstract design.
-# ^ we'll refractor/apply proper OOP principles once we're done!
+# ^ we'll refactor/apply proper OOP principles once we're done!
 def play(card: card_mod.Card, is_active, met_land_limit):
     if card.type() == "Land":
         # check if at sorcery speed (priority is implied since play can only be

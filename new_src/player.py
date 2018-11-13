@@ -4,7 +4,9 @@ from new_src import hand
 
 
 class Player:
+    deck: deck.Deck
     hand: hand.Hand
+
     def __init__(self):
         # XXX hard setting attributes is not ideal. once finished:
         # ^ we'll clean it up/enforce definition where needed
@@ -17,20 +19,20 @@ class Player:
         self._lands_played = 0
         self._lands_limit = 1
 
-    def get_max_hand_size(self):
-        return self.max_hand_size
+    def max_hand_size(self):
+        return self._max_hand_size
 
     def draw(self):
         self.hand.add(self.deck.remove_top())
 
     def make_active(self):
-        self.active = True
+        self._active = True
 
     def make_inactive(self):
-        self.active = False
+        self._active = False
 
     def is_active(self):
-        return self.active
+        return self._active
 
     def met_land_limit(self):
-        return self.lands_played < self.lands_limit
+        return self._lands_played < self._lands_limit

@@ -1,21 +1,21 @@
 class Card:
     def __init__(self, name):
-        self.name = name
-        self.tapped = False
-        self.type = "Land"
+        self._name = name
+        self._tapped = False
+        self._type = "Land"
 
     def __repr__(self):
-        return self.name
+        return self._name
 
-    def get_type(self):
-        return self.type
+    def type(self):
+        return self._type
 
-    def is_tapped(self):
-        return self.tapped
+    def _is_tapped(self):
+        return self._tapped
 
     def untap(self):
-        if self.is_tapped():
-            self.tapped = False
+        if self._is_tapped():
+            self._tapped = False
             return True
         else:
             return False
