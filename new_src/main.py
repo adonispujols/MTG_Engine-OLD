@@ -137,14 +137,22 @@ def give_player_priority(index):
                 choice = input("P" + str(index + 1) + ": ").split()
                 # TODO here is where we add more choices for player
                 # ^ either actions requiring priority (play, activate, pass, etc)
-                # ^ OR abiltiy to look at game state
+                # ^ OR ability to look at game state
                 # ^^ XXX could organize ALL input asks such that:
-                #  ^^ user may always look at the board state before a choice
+                # ^^ user may always look at the board state before a choice
                 # if just pressed enter (entered no input)
                 if not choice:
                     passes.inc()
                     give_player_priority((index + 1) % len(players))
                     break
+                # list of options available (debugging or not)
+                # TODO implement user-limited commands (no debug)
+                # ^ normally, user's knowledge of game is limited
+                # ^ he can't just randomly search through hands, decks, etc
+                # ^ EX: hand-self prints own hand of player
+                # TODO play(card)
+                elif choice[0] == "TODO":
+                    pass
                 elif debug:
                     # list of options available only if debugging
                     if choice[0] == "hand":
@@ -158,14 +166,8 @@ def give_player_priority(index):
                             print("ERROR: Need 1 Player # parameter, given 0")
                         else:
                             print_hand(index_1)
-                    # TODO play(card)
-                    else:
-                        print("ERROR: Invalid input")
                 else:
-                    # TODO implement user-limited commands (no debug)
-                    # ^ normally, user's knowledge of game is limited
-                    # ^ he can't just randomly search through hands, decks, etc
-                    pass
+                    print("ERROR: Invalid input")
         if index == 0:
             if not ai_only:
                 user_has_priority()
@@ -320,7 +322,7 @@ def cleanup():
 
 # initializations (for set up)
 # user controls all players (including AI), if true
-debug = True
+debug = False
 # AI controls all players (including player 1), if true
 ai_only = False
 # player 1, the user by default, has index = 0
