@@ -4,6 +4,7 @@ from new_src import player as player_mod
 from new_src import deck
 from new_src import card as card_mod
 from new_src import hand
+from new_src import stack as stack_mod
 
 
 # TODO Last design failed because you thought too much about "what" and not "how"
@@ -106,7 +107,7 @@ def choose_first_player(index):
 
 def initial_draw():
     for player in players:
-        for n in range(player.maximum_hand_size):
+        for n in range(player.get_max_hand_size()):
             player.draw()
 
 
@@ -352,6 +353,37 @@ initial_draw()
 # print_hand_and_decks()
 first_untap_of_game()
 
+# Playing around with play
+
+# need a stack to check if it's empty
+stack = stack_mod.Stack()
+
+
+# the USER/AI plays cards, NOT the player object!
+# ^ It's something the actual player DOES on the CARD
+# TODO start with playing a land!
+# ^ literally just straight up think about how, you would go about playing a land.
+# ^ DO NOT WORRY about efficiency/super abstract design.
+# ^ we'll refractor/apply proper OOP principles once we're done!
+def play(card: card_mod.Card, is_active, met_land_limit):
+    if card.type() == "Land":
+        # check if at sorcery speed (priority is implied since play can only be
+        # ^ be called if had priority)
+        sorcery_speed = stack.is_empty() and is_active
+        if sorcery_speed and not met_land_limit:
+            # put on battlefield (typically from hand)
+            pass
+        # PASS THE ZONE!
+
+
+# to play a land
+# check if card is a land:
+# ^ this is a special action that requires:
+# - sorcery speed (priority (given), stack is empty, is their turn (is active))
+# & - lands played < lands limit
+# ^ then, you put it onto battlefield (usually from hand)
+# ^ no need for stack resolving or passing priority
+# !!!!    regain priorirty afterwards
 
 # 10 MINUTES HARD CODING QUICK COMMENTS LET'S GO!
 
