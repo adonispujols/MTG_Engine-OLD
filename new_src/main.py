@@ -41,6 +41,10 @@ def print_hand_and_decks():
               "\nP" + str(i + 1), "DECK:\n", player.deck)
 
 
+def print_hand(index):
+    print("P" + str(index + 1), "HAND:\n", players[index].hand)
+
+
 # methods for officially "Starting the Game" [CR 103], in corresponding order
 def fill_decks():
     # fill each deck with 60 cards
@@ -70,7 +74,7 @@ def choose_first_player(index):
                 print("ERROR: Invalid int")
             else:
                 if 1 <= choice <= len(players):
-                    return choice - 1
+                    return choice
                 else:
                     print("ERROR: Invalid Player #")
     if index == 0:
@@ -85,7 +89,7 @@ def choose_first_player(index):
         else:
             # ai is making choice (by default, chooses itself)
             first = index
-    print("P" + str(first + 1), "goes first.")
+    print("P" + str(first), "goes first.")
     return first
 
 
@@ -118,15 +122,34 @@ def give_player_priority(index):
         # ask the user for input
         def user_has_priority():
             while True:
-                choice = input("P" + str(index + 1) + ", Press enter to pass")
+                # splits choice into string list, separated by whitespaces
+                choice = input("P" + str(index + 1) + ": ").split()
+                # TODO here is where we add more choices for player
+                # ^ either actions requiring priority (play, activate, pass, etc)
+                # ^ OR abiltiy to look at game state
+                # ^^ XXX could organize ALL input asks such that:
+                #  ^^ user may always look at the board state before a choice
                 # if just pressed enter (entered no input)
                 if not choice:
                     passes.inc()
                     give_player_priority((index + 1) % len(players))
                     break
-                    # TODO here is where we add more choices for player
-                    # ^ i.e., actions requiring priority (play, activate, etc)
-                    # TODO play
+                if choice[0] == "print_hand":
+                    # XXX make a general "valid player index" method?
+                    try:
+                        # index<_n> are just aliases for player index
+                        index_1 = int(choice[1]) - 1
+                    except ValueError:
+                        print("ERROR: Invalid integer")
+                    except IndexError:
+                        print("ERROR: Need 1 Player # parameter, given 0")
+                    else:
+                        if 
+                        # if 1 <= index_1 <= len(players):
+                        #     print_hand(index_1 - 1)
+                        # else:
+                        #     print("ERROR: Invalid Player #")
+                # TODO play
                 else:
                     print("ERROR: Invalid input")
         if index == 0:
@@ -310,7 +333,7 @@ shuffle_all()
 # randrange is [start, stop) (exclusive)
 first_player = choose_first_player(random.randrange(len(players)))
 initial_draw()
-print_hand_and_decks()
+# print_hand_and_decks()
 first_untap_of_game()
 
 
