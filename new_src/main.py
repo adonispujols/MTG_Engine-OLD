@@ -111,23 +111,34 @@ def untap_all_of_active():
 
 def give_player_priority(index):
     if passes.count() != len(players):
+        # ask the user for input
+        def user_has_priority():
+            while True:
+                choice = input("P" + str(index + 1) + ", Press enter to pass")
+                # if just pressed enter (entered no input)
+                if not choice:
+                    passes.inc()
+                    give_player_priority((index + 1) % len(players))
+                    break
+                    # TODO here is where we add more choices for player
+                    # ^ i.e., actions requiring priority (play, activate, etc)
+                else:
+                    print("ERROR: Invalid input")
         if index == 0:
-            # ask player_1, or user, for input
-            choice = input("P1, Press enter to pass")
-            # if just pressed enter (entered no input)
-            if not choice:
-                passes.inc()
-                give_player_priority(index + 1)
-        elif debug:
-            # ask user controlling ai for input (same as above)
-            choice = input("P" + str(index + 1) + ", Press enter to pass")
-            if not choice:
-                passes.inc()
-                give_player_priority((index + 1) % len(players))
+            if not ai_only:
+                user_has_priority()
+            else:
+                # TODO continue adding AI options in future!
+                # ai is making choice
+                pass
         else:
-            # TODO continue adding AI options in future!
-            pass
-    # "passed in succession" <- with no care about actions
+            if debug:
+                user_has_priority()
+            else:
+                # ai is making choice
+                pass
+    # TODO need to take into account actions taken in between passes!
+    # "passed in succession"
     else:
         # MUST RESET PASSES (else we're stuck in infinite loop)
         passes.reset()
@@ -135,7 +146,6 @@ def give_player_priority(index):
 
 
 class Passes:
-    # TODO need to take into account actions taken in between passes!
     # XXX hacky solution, of course, but better than globals!
     # Again, the 50% > 99%, cause the 50% actually exists!
     def __init__(self):
