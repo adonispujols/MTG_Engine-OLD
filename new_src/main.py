@@ -47,15 +47,7 @@ def print_hand_and_decks():
 
 
 def print_hand(index):
-    # XXX Python recommends EAFP (Easier to ask for forgiveness than permission)
-    # ^ As opposed to LBYL (Look before you leap)
-    # Thus, use exceptions to handle (actual) errors, instead of checking ahead.
-    try:
-        hand_str = players[index].hand
-    except IndexError:
-        print("ERROR: Invalid Player #")
-    else:
-        print("P" + str(index + 1), "HAND:\n", hand_str)
+        print("P" + str(index + 1), "HAND:\n", players[index].hand)
 
 
 # methods for officially "Starting the Game" [CR 103], in corresponding order
@@ -86,7 +78,7 @@ def choose_first_player(index):
             except ValueError:
                 print("ERROR: Invalid int")
             else:
-                if 0 <= choice <= len(players) - 1:
+                if 0 <= choice < len(players):
                     return choice
                 else:
                     print("ERROR: Invalid Player #")
@@ -167,7 +159,16 @@ def give_player_priority(index):
                         except IndexError:
                             print("ERROR: Need 1 Player # parameter, given 0")
                         else:
-                            print_hand(index_1)
+                            # XXX Apply EAFP ONLY when validating input, NOT LOGIC!
+                            # ^ I.e., checking for int/params is FINE! BUT we
+                            # ^ can't allow for irreversible game states by allowing
+                            # ^ invalid actions to run until error is caught!!!
+                            # - Essentially: Preemptively stop illegal game states
+                            # - from existing!
+                            if 0 <= index_1 < len(players):
+                                print_hand(index_1)
+                            else:
+                                print("ERROR: Invalid Player #")
                 else:
                     print("ERROR: Invalid input")
         if index == 0:
@@ -324,7 +325,7 @@ def cleanup():
 
 # initializations (for set up)
 # user controls all players (including AI), if true
-debug = False
+debug = True
 # AI controls all players (including player 1), if true
 ai_only = False
 # player 1, the user by default, has index = 0
