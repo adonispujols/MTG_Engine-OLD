@@ -6,8 +6,11 @@ from new_src import card as card_mod
 from new_src import hand
 
 
+# TODO Last design failed because you thought too much about "what" and not "how"
+# ^ Don't guess ahead of time what's needed! Find out by trying to do it!
 # TODO keep code compatible code with multiplayer & ai vs ai!
 # TODO Always let code fail gracefully on invalid input (if reversible)!
+# TODO Stay Pythonic! Throw exceptions on actual errors, rather than check ahead!
 # XXX Try generalizing ai behavior to a script or so?
 # XXX Maintain a complete, solid CLI to depend on during GUI dev.
 # ^ This is ALWAYS our main focus, with ports made to GUI when ready.
@@ -42,7 +45,15 @@ def print_hand_and_decks():
 
 
 def print_hand(index):
-    print("P" + str(index + 1), "HAND:\n", players[index].hand)
+    # XXX Python recommends EAFP (Easier to ask for forgiveness than permission)
+    # ^ As opposed to LBYL (Look before you leap)
+    # Thus, use exceptions to handle (actual) errors, instead of checking ahead.
+    try:
+        hand_str = players[index].hand
+    except IndexError:
+        print("ERROR: Invalid Player #")
+    else:
+        print("P" + str(index + 1), "HAND:\n", hand_str)
 
 
 # methods for officially "Starting the Game" [CR 103], in corresponding order
@@ -69,11 +80,11 @@ def choose_first_player(index):
         # must be an int and refer to an actual player
         while True:
             try:
-                choice = int(input("Player #: "))
+                choice = int(input("Player #: ")) - 1
             except ValueError:
                 print("ERROR: Invalid int")
             else:
-                if 1 <= choice <= len(players):
+                if 0 <= choice <= len(players) - 1:
                     return choice
                 else:
                     print("ERROR: Invalid Player #")
@@ -89,7 +100,7 @@ def choose_first_player(index):
         else:
             # ai is making choice (by default, chooses itself)
             first = index
-    print("P" + str(first), "goes first.")
+    print("P" + str(first + 1), "goes first.")
     return first
 
 
@@ -134,24 +145,27 @@ def give_player_priority(index):
                     passes.inc()
                     give_player_priority((index + 1) % len(players))
                     break
-                if choice[0] == "print_hand":
-                    # XXX make a general "valid player index" method?
-                    try:
-                        # index<_n> are just aliases for player index
-                        index_1 = int(choice[1]) - 1
-                    except ValueError:
-                        print("ERROR: Invalid integer")
-                    except IndexError:
-                        print("ERROR: Need 1 Player # parameter, given 0")
+                elif debug:
+                    # list of options available only if debugging
+                    if choice[0] == "hand":
+                        # XXX make a general "valid player index" method?
+                        try:
+                            # index<_n> are just aliases for player index
+                            index_1 = int(choice[1]) - 1
+                        except ValueError:
+                            print("ERROR: Invalid integer")
+                        except IndexError:
+                            print("ERROR: Need 1 Player # parameter, given 0")
+                        else:
+                            print_hand(index_1)
+                    # TODO play(card)
                     else:
-                        if 
-                        # if 1 <= index_1 <= len(players):
-                        #     print_hand(index_1 - 1)
-                        # else:
-                        #     print("ERROR: Invalid Player #")
-                # TODO play
+                        print("ERROR: Invalid input")
                 else:
-                    print("ERROR: Invalid input")
+                    # TODO implement user-limited commands (no debug)
+                    # ^ normally, user's knowledge of game is limited
+                    # ^ he can't just randomly search through hands, decks, etc
+                    pass
         if index == 0:
             if not ai_only:
                 user_has_priority()
