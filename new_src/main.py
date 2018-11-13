@@ -7,7 +7,9 @@ from new_src import hand
 from new_src import stack as stack_mod
 
 
-# XXX Always assume private field/method, then make public if need to expose.
+# XXX NEVER "SAFE" DELETE: It makes you *think* you don't need it, but you might of!
+# XXX Assume private fields/methods, then make public if needed by OTHER objects
+# ^ "OTHER" includes inner objects (if applicable)
 # XXX Never use straight getters/setters <- use properties!
 # XXX Last design failed because you thought too much about "what" and not "how"
 # ^ Don't guess ahead of time what's needed! Find out by trying to do it!

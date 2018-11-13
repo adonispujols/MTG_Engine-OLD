@@ -6,5 +6,4 @@ class StepOrPhase:
         # So far this is hard set, can it be better?
         self.index = 0
 
-    def get_index(self):
-        return self.index
+# DONT JUST SET. THINK ABOUT WHAT YOURE DOING! SAY SET SPECIFIC INDEX OR SO

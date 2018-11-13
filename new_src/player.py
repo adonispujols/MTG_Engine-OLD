@@ -13,26 +13,20 @@ class Player:
         # ^ or create the object here, if needed
         self.deck = None
         self._life = 20
-        self._max_hand_size = 7
+        self.max_hand_size = 7
         self.hand = None
-        self._active = False
+        self.active = False
         self._lands_played = 0
         self._lands_limit = 1
-
-    def max_hand_size(self):
-        return self._max_hand_size
 
     def draw(self):
         self.hand.add(self.deck.remove_top())
 
     def make_active(self):
-        self._active = True
+        self.active = True
 
     def make_inactive(self):
-        self._active = False
-
-    def is_active(self):
-        return self._active
+        self.active = False
 
     def met_land_limit(self):
         return self._lands_played < self._lands_limit
