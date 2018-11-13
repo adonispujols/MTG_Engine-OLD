@@ -6,7 +6,7 @@ class Game:
         self._debug = True
         self._ai_only = False
         # private since we only need each player, NOT players[]
-        self._players = []
+        self.players = []
         self._battlefield = []
         # XXX Better to cluster functions to a module, then clutter
         # ^ this namespace with functions related ONLY to that object!
