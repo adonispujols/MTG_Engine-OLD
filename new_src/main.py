@@ -6,9 +6,13 @@ from new_src import card as card_mod
 from new_src import hand
 
 
+# TODO keep code compatible code with multiplayer & ai vs ai!
 # TODO Always let code fail gracefully on invalid input (if reversible)!
+# XXX Try generalizing ai behavior to a script or so?
 # XXX Maintain a complete, solid CLI to depend on during GUI dev.
 # ^ This is ALWAYS our main focus, with ports made to GUI when ready.
+
+
 # methods/classes for setting up game
 # (before going through official "Starting the Game" steps [CR 103])
 def init_battlefield():
@@ -122,6 +126,7 @@ def give_player_priority(index):
                     break
                     # TODO here is where we add more choices for player
                     # ^ i.e., actions requiring priority (play, activate, etc)
+                    # TODO play
                 else:
                     print("ERROR: Invalid input")
         if index == 0:
@@ -171,8 +176,7 @@ def first_untap_of_game():
     print("Start of First Untap Step")
     step_or_phase.index = 0
     # ^ XXX evil sets? (along with rest of step_or_phase.index = x)
-    # at start, no one is active, so we must directly make first player active.
-    # set 1st player to active player
+    # at start, no one is active, so we must directly make 1st player active.
     players[first_player].make_active()
     print("Active Player:", active_index() + 1)
     print("TBA: Untap all")
@@ -187,7 +191,7 @@ def untap():
     prev_active_index = active_index()
     active_player().make_inactive()
     players[(prev_active_index + 1) % len(players)].make_active()
-    # XXX caling active_index is slightly in efficient, but HEY,
+    # XXX calling active_index again is slightly inefficient, but HEY,
     # ^ there might be a corner case we need to cover
     # ALWAYS FAVOR SECURITY/CLARITY OVER EFFICIENCY (to reasonable limits)
     print("Active Player:", active_index() + 1)
@@ -276,8 +280,6 @@ def cleanup():
     step_or_phase.index = 12
     untap()
 
-
-# TODO keep code compatible code with multiplayer & ai vs ai!:
 
 # initializations (for set up)
 # user controls all players (including AI), if true
