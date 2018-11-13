@@ -5,19 +5,17 @@ from new_src import hand
 
 class Player:
     hand: hand.Hand
-    deck: deck.Deck
-
     def __init__(self):
         # XXX hard setting attributes is not ideal. once finished:
         # ^ we'll clean it up/enforce definition where needed
         # ^ or create the object here, if needed
         self.deck = None
-        self.life = 20
-        self.max_hand_size = 7
+        self._life = 20
+        self._max_hand_size = 7
         self.hand = None
-        self.active = False
-        self.lands_played = 0
-        self.lands_limit = 1
+        self._active = False
+        self._lands_played = 0
+        self._lands_limit = 1
 
     def get_max_hand_size(self):
         return self.max_hand_size

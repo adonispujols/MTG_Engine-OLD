@@ -373,7 +373,7 @@ def play(card: card_mod.Card, is_active, met_land_limit):
         if sorcery_speed and not met_land_limit:
             # put on battlefield (typically from hand)
             pass
-        # PASS THE ZONE!
+        # PASS THE ZONE! PSSS ZONE ND ID/IDENTIFIER FROM THAT ZONE
 
 
 # to play a land
