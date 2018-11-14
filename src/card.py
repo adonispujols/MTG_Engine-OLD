@@ -61,7 +61,7 @@ class Card(abc.ABC):
         for restriction in restrictions:
             if not restriction(self):
                 return False
-            return True
+        return True
 
     def play(self):
         if self.met_priority_or_special_restrictions():
