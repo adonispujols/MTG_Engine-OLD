@@ -6,20 +6,19 @@ from new_src import hand
 from new_src import game as game_mod
 from new_src import turn_actions
 # XXX Always forward reference types (wrap in string) to avoid import errors!
-# ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
+# ^ STILL NEED TO IMPORT FOR THIS TO  WORK <- key misunderstanding
 
 
 # TODO Comments are reserved for ONLY todos and warnings!
+
 # XXX
 # 	CREATE SCRIPT TO QUICKLY TAKE YOU TO A POINT IN GAME!
 # AUTOMATE CHANGING PLYER WITHOUT THE OLD HACK OF EDITING/COMMENTING CODE
 # (won’t work on large codebases/lots of time + effort on stuff that will
 # just be deleted afterwards)#
-
-# Rollout testing suite confirming (on each run) that everything is
+#   Rollout testing suite confirming (on each run) that everything is
 # (and still is) okay!!!!!!!!
 # XXX
-
 
 # XXX Don't forget about Planechase! Super fun!
 # XXX Use "_" for basic loops/not using item (not for i in range(len(iter)))
@@ -106,10 +105,10 @@ def choose_first_player(game: game_mod.Game):
                 else:
                     print("ERROR: Invalid player #")
     if index == 0:
-        if not game.ai_only:
-            first = user_chooses_first_player()
-        else:
+        if game.ai_only:
             first = index
+        else:
+            first = user_chooses_first_player()
     else:
         if game.debug:
             first = user_chooses_first_player()
@@ -118,8 +117,8 @@ def choose_first_player(game: game_mod.Game):
     print("P" + str(first + 1), "goes first.")
     return first
 
-init_game()
 
+init_game()
 
 # import abc
 #

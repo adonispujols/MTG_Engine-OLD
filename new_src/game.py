@@ -46,6 +46,7 @@ class Game:
         return self._sorcery_speed(self.players[index].active)\
                and self.players[index].under_land_limit()
 
+    # XXX don't pass index if you need the player (modify an attribute)
     def active_index(self):
         # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
         for i, player in enumerate(self.players):
@@ -60,7 +61,12 @@ class Game:
             card.untap()
 
     def give_player_priority(self, index):
-        if int(self._passes) != len(self.players):
+        if int(self._passes) == len(self.players):
+            # TODO need to take into account actions taken in between passes!
+            # MUST RESET PASSES (else we're stuck in infinite loop)
+            self._passes.reset()
+            turn_actions.start_next_step_or_phase(self, self.step_or_phase)
+        else:
             def user_has_priority():
                 while True:
                     choice = input(self._player_prompt(index)).split()
@@ -134,14 +140,9 @@ class Game:
                     user_has_priority()
                 else:
                     pass
-        # TODO need to take into account actions taken in between passes!
-        else:
-            # MUST RESET PASSES (else we're stuck in infinite loop)
-            self._passes.reset()
-            turn_actions.start_next_step_or_phase(self, self.step_or_phase)
 
-    # TODO don't pass index if you need the player (modify an attribute)
-    def play(self, zone, card_index, player_index):
+    # XXX Only pass
+    def play(self, zone, card_index, player_index, ):
         card = zone.get(card_index)
         if card.type == "Land":
             if self._met_land_restrictions(player_index):
@@ -152,4 +153,4 @@ class Game:
                 # TODO ACTUALLT INCREMENT LANDS PLAYED
                 # TODO ACTUALLT INCREMENT LANDS PLAYED
                 # TODO ACTUALLT INCREMENT LANDS PLAYED
-        # if card.type == "Creature"
+        # elif card.type == "Creature"
