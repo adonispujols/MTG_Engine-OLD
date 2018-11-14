@@ -9,6 +9,7 @@ from new_src import turn_actions
 # ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
+# TODO Comments are reserved for ONLY todos and warnings!
 # XXX
 # 	CREATE SCRIPT TO QUICKLY TAKE YOU TO A POINT IN GAME!
 # AUTOMATE CHANGING PLYER WITHOUT THE OLD HACK OF EDITING/COMMENTING CODE
@@ -38,12 +39,28 @@ from new_src import turn_actions
 # ^ This is ALWAYS our main focus, with ports made to GUI when ready.
 # XXX need to handle times where you CAN play one of your opponents cards
 
-# (before going through official "Starting the Game" steps [CR 103])
-# methods for officially "Starting the Game" [CR 103], in corresponding order
+# XXX Constantly peeking into game in init/start script is acceptable since
+# ^ it's basically just a helper script to help declutter the game namespace
+
+def init_game():
+    new_game = game_mod.Game()
+    new_game.debug = True
+    new_game.ai_only = False
+    new_game.players = [player_mod.Player(), player_mod.Player()]
+    # XXX hard setting attributes is not ideal. ( we'll refactor once done)
+    new_game.players[0].deck = deck.Deck()
+    new_game.players[0].hand = hand.Hand()
+    new_game.players[1].deck = deck.Deck()
+    new_game.players[1].hand = hand.Hand()
+    fill_decks(new_game)
+    new_game.battlefield = []
+    init_battlefield(new_game)
+    start_game(new_game)
+
+
 def fill_decks(game):
-    # fill each deck with 60 cards
     for _ in range(60):
-        # each card must be a new, separate object,
+        # XXX each card must be a new, separate object,
         # else both decks will refer to same object!
         game.players[0].deck.push(card_mod.Card("one"))
         game.players[1].deck.push(card_mod.Card("two"))
@@ -54,18 +71,30 @@ def init_battlefield(game):
         game.battlefield.append([])
 
 
+def start_game(game):
+    shuffle_all(game)
+    # XXX in a match, loser of last game chooses
+    initial_draw(game)
+    turn_actions.first_untap_of_game(game, choose_first_player(game))
+
+
 def shuffle_all(game):
     for player in game.players:
         player.deck.shuffle()
 
 
-def choose_first_player(game: game_mod.Game, index):
+def initial_draw(game):
+    for player in game.players:
+        for _ in range(player.max_hand_size):
+            player.draw()
+
+
+def choose_first_player(game: game_mod.Game):
+    index = random.randrange(len(game.players))
     print("P" + str(index + 1) + ", who goes first?")
 
     # XXX ALWAYS define funcs locally they'll ONLY be used in that context!
-    # ask the user for input
     def user_chooses_first_player():
-        # must be an int and refer to an actual player
         while True:
             try:
                 choice = int(input("Player #: ")) - 1
@@ -80,7 +109,6 @@ def choose_first_player(game: game_mod.Game, index):
         if not game.ai_only:
             first = user_chooses_first_player()
         else:
-            # ai is making choice (by default, chooses itself)
             first = index
     else:
         if game.debug:
@@ -90,43 +118,7 @@ def choose_first_player(game: game_mod.Game, index):
     print("P" + str(first + 1), "goes first.")
     return first
 
-
-def initial_draw(game):
-    for player in game.players:
-        for _ in range(player.max_hand_size):
-            player.draw()
-
-
-# XXX Constantly peeking into game in is acceptable in THIS case since we're
-# ^ basically making a separate helper script for init/start
-# ^ Helps declutter the game namespace
-
-# initializations (for set up)
-new_game = game_mod.Game()
-# user controls all players (including AI), if true
-new_game.debug = True
-# AI controls all players (including player 1), if true
-new_game.ai_only = False
-# player 1, the user by default, has index = 0
-# player 2+, the ai by default, has index = nth player - 1
-new_game.players = [player_mod.Player(), player_mod.Player()]
-# XXX hard setting attributes is not ideal. ( we'll refactor once done)
-new_game.players[0].deck = deck.Deck()
-new_game.players[0].hand = hand.Hand()
-new_game.players[1].deck = deck.Deck()
-new_game.players[1].hand = hand.Hand()
-fill_decks(new_game)
-# cards in battlefield[player_index] pertain to that player
-new_game.battlefield = []
-init_battlefield(new_game)
-
-# Starting the game [CR 103]
-shuffle_all(new_game)
-# XXX in a match, loser of last game chooses
-# randrange is [start, stop) (exclusive)
-first_player = choose_first_player(new_game, random.randrange(len(new_game.players)))
-initial_draw(new_game)
-turn_actions.first_untap_of_game(new_game, first_player)
+init_game()
 
 
 # import abc

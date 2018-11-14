@@ -33,7 +33,11 @@ class Game:
         print("P" + str(index + 1), "HAND:\n", self.players[index].hand)
 
     def _player_prompt(self, index):
-        return "P{:d} {}: ".format(index + 1, ("A" if self.players[index].active else "N"))
+        return "{} P{:d}: ".format(("A" if self.players[index].active else "N"), index + 1)
+
+    def _in_main_phase(self):
+        return (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
+                or self.step_or_phase == tp.TurnParts.POSTCOMBAT_MAIN)
 
     def active_index(self):
         # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
@@ -50,10 +54,8 @@ class Game:
 
     def give_player_priority(self, index):
         if self._passes.count != len(self.players):
-            # ask the user for input
             def user_has_priority():
                 while True:
-                    # a_n = "A" if self.players[index].active else "N"
                     choice = input(self._player_prompt(index)).split()
                     # TODO here is where we add more choices for player
                     # ^ either actions requiring priority (play, activate, pass, etc)
@@ -92,7 +94,6 @@ class Game:
                         if choice[0] == "hand":
                             # XXX make a general "valid player index" method?
                             try:
-                                # "p_index" means player index/index param
                                 p_index = int(choice[1]) - 1
                             except ValueError:
                                 print("ERROR: Invalid integer")
@@ -127,47 +128,17 @@ class Game:
                 else:
                     pass
         # TODO need to take into account actions taken in between passes!
-        # "passed in succession"
         else:
             # MUST RESET PASSES (else we're stuck in infinite loop)
             self._passes.reset()
             turn_actions.start_next_step_or_phase(self, self.step_or_phase)
 
-    # Playing around with play
-
-    # the USER/AI plays cards, NOT the player object!
-    # ^ It's something the actual player DOES on the CARD
-    # TODO start with playing a land!
-    # ^ literally just straight up think about how, you would go about playing a land.
-    # ^ DO NOT WORRY about efficiency/super abstract design.
-    # ^ we'll refactor/apply proper OOP principles once we're done!
     def play(self, zone, card_index, is_active, under_land_limit, player_index):
-        # with zone and index we can find the card
-        # FIRST, just look at it. THEN pop once confirmed legal
         card = zone.get(card_index)
-        # ELSE, IT, OR AT LEAST, CAST, WON'T KNOW WHAT TO DO
         if card.type == "Land":
-            # check if at sorcery speed (priority is implied since play can only be
-            # ^ be called if had priority)
-            in_main_phase = (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
-                    or self.step_or_phase == tp.TurnParts.POSTCOMBAT_MAIN)
-            sorcery_speed = in_main_phase and self._stack.is_empty() and is_active
-            # 1st is timing restriction, second is a specific restriction
-            if sorcery_speed and under_land_limit:
+            sorcery_speed = is_active and self._in_main_phase() and self._stack.is_empty()
+            if under_land_limit and sorcery_speed:
                 # put on battlefield (typically from hand)
                 # need to move it from previous zone to battlefield
                 zone.remove(card_index)
                 self.battlefield[player_index].append(card)
-
-    # to play a land
-    # check if card is a land:
-    # ^ this is a special action that requires:
-    # - sorcery speed (priority (given), stack is empty, is their turn (is active))
-    # & - lands played < lands limit
-    # ^ then, you put it onto battlefield (usually from hand)
-    # ^ no need for stack resolving or passing priority
-    # !!!!    regain priorirty afterwards
-    # "losing" priority just means game is doing stuff and you can't interact
-    # with it (not accepting input)
-    # "gaining" priority means the game is taking input again
-
