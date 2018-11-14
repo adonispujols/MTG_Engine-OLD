@@ -5,6 +5,7 @@ from new_src import turn_parts as tp
 from new_src import player as player_mod
 from new_src import stack
 from new_src import card as card_mod
+from new_src import print_utils as print_u
 # XXX Always forward reference types (wrap in string) to avoid import errors!
 # ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
@@ -28,13 +29,6 @@ class Game:
         for i, player in enumerate(self.players):
             print("P" + str(i + 1), "HAND:\n", player.hand,
                   "\nP" + str(i + 1), "DECK:\n", player.deck)
-
-    # move these to helper module if static!
-    def _print_hand(self, index, player):
-        print("P" + str(index + 1), "HAND:\n", player.hand)
-
-    def _player_prompt(self, index, player):
-        return "{} P{:d}: ".format(("A" if player.active else "N"), index + 1)
 
     def _in_main_phase(self):
         return (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
@@ -78,7 +72,7 @@ class Game:
         else:
             def user_has_priority():
                 while True:
-                    choice = input(self._player_prompt(index)).split()
+                    choice = input(print_u.player_prompt(index, self.players[index])).split()
                     # TODO here is where we add more choices for player
                     # ^ either actions requiring priority (play, activate, pass, etc)
                     # ^ OR ability to look at game state
@@ -110,6 +104,8 @@ class Game:
                             p = self.players[index]
                             if 0 <= card_index < p.hand.size():
                                 self.play(p.hand, card_index, index, p)
+                            else:
+                                print("ERROR: Invalid card #")
                     elif self.debug:
                         # XXX Our code ignores extra input after what is understood
                         # ^ I.e., "hand 0 asdf" is translated as "hand 0"
@@ -129,7 +125,7 @@ class Game:
                                 # - Essentially: Preemptively stop illegal game states
                                 # - from existing!
                                 if 0 <= p_index < len(self.players):
-                                    self._print_hand(p_index, self.players[p_index])
+                                    print_u.print_hand(p_index, self.players[p_index])
                                 else:
                                     print("ERROR: Invalid player #")
                         # could we combine this error message w/ final else?
@@ -163,10 +159,10 @@ class Game:
     # ^ *NOT* THE THING SIMPLY CALLING IT FROM INPUT
     # ^ Give play the minimum it should expect from input,
     # ^ and let PLAY sort out the rest!
-    def play(self, zone, card_index, player_index, player):
+    def play(self, zone, card_index, p_index, p):
         card = zone.get(card_index)
         if card.type == "Land":
-            self.play_land(card, zone, card_index, player_index, player, player.lands_played)
+            self.play_land(card, zone, card_index, p_index, p, p.lands_played)
         # elif card.type == "Creature"
 
     # XXX since met land restrictions requires player, play_land, TOO, requires
