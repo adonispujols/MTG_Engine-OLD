@@ -1,13 +1,12 @@
 from new_src import passes
-from new_src import turn_parts
 from new_src import turn_actions
 import typing
-from new_src import player
+from new_src import player as player_mod
 # XXX avoid importing just for type checking (risks cyclic importing)
 
 
 class Game:
-    players: typing.List[player.Player]
+    players: typing.List[player_mod.Player]
 
     def __init__(self):
         self._debug = False
@@ -34,10 +33,10 @@ class Game:
         print("P" + str(index + 1), "HAND:\n", self.players[index].hand)
 
     # methods/classes to use during game
-    # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
     def active_index(self):
+        # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
         for i, player in enumerate(self.players):
-            if player.is_active():
+            if player.active:
                 return i
 
     def active_player(self):
@@ -49,7 +48,7 @@ class Game:
             card.untap()
 
     def give_player_priority(self, index):
-        if self._passes.count() != len(self.players):
+        if self.passes != len(self.players):
             # ask the user for input
             def user_has_priority():
                 while True:

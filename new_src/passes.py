@@ -3,7 +3,7 @@ class Passes:
         self.passes = 0
 
     def inc(self):
-        self._passes += 1
+        self.passes += 1
 
     def reset(self):
-        self._passes = 0
+        self.passes = 0
