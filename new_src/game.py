@@ -71,6 +71,9 @@ class Game:
             turn_actions.start_next_step_or_phase(self, self.step_or_phase)
         else:
             def user_has_priority():
+                # TODO is it okay to just ignore superfluous/extra input?
+                # ^ i.e., hand 2 asdfasdfasdf will just have asdf... ignored
+                # ^ is this okay behavior?
                 while True:
                     choice = input(print_u.player_prompt(index, self.players[index])).split()
                     # TODO here is where we add more choices for player
@@ -103,9 +106,35 @@ class Game:
                             # ^ So go ahead and have player = players[index]!
                             p = self.players[index]
                             if 0 <= card_index < p.hand.size():
-                                self.play(p.hand, card_index, index, p)
+                                self._play(p.hand, card_index, index, p)
                             else:
                                 print("ERROR: Invalid card #")
+                    # TODO activate ability
+                    # ^ what to name for pseudo activations, like morph and
+                    # ^ other special actions?
+                    elif choice[0] == "activate":
+                        # TODO allow for activating from other zones
+                        # player chooses a card from a zone (just battlefield for now)
+                        try:
+                            # enter card # on field (counting left to right)
+                            card_index = int(choice[1]) - 1
+                        except ValueError:
+                            print("ERROR: Invalid integer")
+                        except IndexError:
+                            print("ERROR: Need 1 player # parameter, given 0")
+                        else:
+                            # TODO VARIABLES FOR LIST[] DO SAVE COMPUTATION!
+                            # ^- A list[i] takes more work than just reading var
+                            # ^ So go ahead and have player = players[index]!
+                            # TODO sometimes you CAN activate stuff on another
+                            # ! person's side of the field!
+                            # Right now you can only activate from YOUR side!
+                            if 0 <= card_index < len(self.battlefield[index]):
+                                self._activate()
+                            else:
+                                print("ERROR: Invalid card #")
+                    elif choice[0] == "field":
+                        print_u.print_field(self.battlefield)
                     elif self.debug:
                         # XXX Our code ignores extra input after what is understood
                         # ^ I.e., "hand 0 asdf" is translated as "hand 0"
@@ -159,19 +188,22 @@ class Game:
     # ^ *NOT* THE THING SIMPLY CALLING IT FROM INPUT
     # ^ Give play the minimum it should expect from input,
     # ^ and let PLAY sort out the rest!
-    def play(self, zone, card_index, p_index, p):
+    def _play(self, zone, card_index, p_index, p):
         card = zone.get(card_index)
         if card.type == "Land":
-            self.play_land(card, zone, card_index, p_index, p, p.lands_played)
+            self._play_land(card, zone, card_index, p_index, p, p.lands_played)
         # elif card.type == "Creature"
 
     # XXX since met land restrictions requires player, play_land, TOO, requires
     # ^ it! Just passing it as an index so we can call players[index] is both
     # ^ deceptive, clunky, AND inefficient!
-    def play_land(self, card, zone, card_index, player_index, player, lands_played):
+    def _play_land(self, card, zone, card_index, player_index, player, lands_played):
         if self._met_land_restrictions(player):
             zone.remove(card_index)
             self.battlefield[player_index].append(card)
             # XXX Always increment afterwards (if you can) so it's only
             # ^ done on success
             lands_played.inc()
+
+    def _activate(self):
+        pass
