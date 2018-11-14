@@ -6,7 +6,7 @@ from new_src import hand
 from new_src import game as game_mod
 from new_src import turn_actions
 # XXX Always forward reference types (wrap in string) to avoid import errors!
-# ^ STILL NEED TO IMPORT FOR THIS TO  WORK <- key misunderstanding
+# ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
 # TODO Comments are reserved for ONLY todos and warnings!

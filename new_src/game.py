@@ -141,16 +141,22 @@ class Game:
                 else:
                     pass
 
-    # XXX Only pass
-    def play(self, zone, card_index, player_index, ):
+    # XXX Only pass the EXACT object you need! Not an object containing it!
+    # ^ i.e, what's the closest possible object you need to do your work?
+    # ^ e.g., if you need a hand, just get the hand, NOT player (for player.hand)
+    # XXX WARNING: You can ONLY edit stuff by accessing it's wrapper!
+    # ^ Thus, any operation on "class.foo" has to be done via class.foo = ...
+    # ^ NOT passed as a param! Direct param loses class context, so can't edit
+    def play(self, zone, card_index, player_index, player):
         card = zone.get(card_index)
         if card.type == "Land":
+            play_land
             if self._met_land_restrictions(player_index):
-                # put on battlefield (typically from hand)
-                # need to move it from previous zone to battlefield
                 zone.remove(card_index)
                 self.battlefield[player_index].append(card)
-                # TODO ACTUALLT INCREMENT LANDS PLAYED
-                # TODO ACTUALLT INCREMENT LANDS PLAYED
-                # TODO ACTUALLT INCREMENT LANDS PLAYED
+                # XXX Always increment afterwards (if you can) so it's only
+                # ^ done on success
+                lands_played
+
         # elif card.type == "Creature"
+    def play_land(self, card, zone, card_index, player_index, lands_played):
