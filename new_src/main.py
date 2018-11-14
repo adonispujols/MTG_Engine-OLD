@@ -6,9 +6,11 @@ from new_src import card as card_mod
 from new_src import hand
 from new_src import stack as stack_mod
 from new_src import game as game_mod
+from new_src import turn_actions
 
 
 # XXX Don't forget about Planechase! Super fun!
+# XXX Use "_" for basic loops/not using item (not for i in range(len(iter)))
 # XXX NEVER "SAFE" DELETE: It makes you *think* you don't need it, but you might of!
 # XXX Assume private fields/methods, then make public if needed by OTHER objects
 # ^ "Private" = strictly internal. I.e., NEVER USED outside the class or module/file
@@ -22,31 +24,32 @@ from new_src import game as game_mod
 # XXX Try generalizing ai behavior to a script or so?
 # XXX Maintain a complete, solid CLI to depend on during GUI dev.
 # ^ This is ALWAYS our main focus, with ports made to GUI when ready.
+# XXX need to handle times where you CAN play one of your opponents cards
 
 
 # methods/classes for setting up game
 # (before going through official "Starting the Game" steps [CR 103])
 def init_battlefield(game):
-    for player in range(len(game.players)):
-        game._battlefield.append([])
+    for _ in game.players:
+        game.battlefield.append([])
 
 
 # methods for officially "Starting the Game" [CR 103], in corresponding order
 def fill_decks(game):
     # fill each deck with 60 cards
-    for x in range(60):
+    for _ in range(60):
         # each card must be a new, separate object,
         # else both decks will refer to same object!
-        players[0].deck.add_top(card_mod.Card("one"))
-        players[1].deck.add_top(card_mod.Card("two"))
+        game.players[0].deck.add_top(card_mod.Card("one"))
+        game.players[1].deck.add_top(card_mod.Card("two"))
 
 
 def shuffle_all(game):
-    for player in players:
+    for player in game.players:
         player.deck.shuffle()
 
 
-def choose_first_player(game, index):
+def choose_first_player(game: game_mod.Game, index):
     print("P" + str(index + 1) + ", who goes first?")
 
     # XXX ALWAYS define funcs locally they'll ONLY be used in that context!
@@ -59,18 +62,18 @@ def choose_first_player(game, index):
             except ValueError:
                 print("ERROR: Invalid int")
             else:
-                if 0 <= choice < len(players):
+                if 0 <= choice < len(game.players):
                     return choice
                 else:
                     print("ERROR: Invalid Player #")
     if index == 0:
-        if not ai_only:
+        if not game.ai_only:
             first = user_chooses_first_player()
         else:
             # ai is making choice (by default, chooses itself)
             first = index
     else:
-        if debug:
+        if game.debug:
             first = user_chooses_first_player()
         else:
             # ai is making choice (by default, chooses itself)
@@ -80,46 +83,42 @@ def choose_first_player(game, index):
 
 
 def initial_draw(game):
-    for player in players:
-        for n in range(player.max_hand_size()):
+    for player in game.players:
+        for _ in range(player.max_hand_size):
             player.draw()
 
 
-# XXX Constantly peeking into game implies this probably should be done by it
+# XXX Constantly peeking into game implies GAME should probably do init/start
+# ^ UNLESS We want a separate helper script for init/start
 
 # initializations (for set up)
-game = game_mod.Game()
+new_game = game_mod.Game()
 # user controls all players (including AI), if true
-game._debug = True
+new_game.debug = True
 # AI controls all players (including player 1), if true
-game._ai_only = False
+new_game.ai_only = False
 # cards in battlefield[player_index] pertain to that player
-game.battlefield = []
-init_battlefield(game)
+new_game.battlefield = []
+init_battlefield(new_game)
 # player 1, the user by default, has index = 0
 # player 2+, the ai by default, has index = nth player - 1
-game.players = [player_mod.Player(), player_mod.Player()]
+new_game.players = [player_mod.Player(), player_mod.Player()]
 # XXX hard setting attributes is not ideal. ( we'll refactor once done)
-game.players[0].deck = deck.Deck()
-game.players[0].hand = hand.Hand()
-game.players[1].deck = deck.Deck()
-game.players[1].hand = hand.Hand()
-fill_decks(game)
-
-passes = Passes()
-step_or_phase = StepOrPhase()
-START_METHODS = (upkeep, draw, pre_combat, begin_combat, declare_attackers,
-                 declare_blockers, first_strike_damage, combat_damage,
-                 end_combat, post_combat, end, cleanup, untap)
+new_game.players[0].deck = deck.Deck()
+new_game.players[0].hand = hand.Hand()
+new_game.players[1].deck = deck.Deck()
+new_game.players[1].hand = hand.Hand()
+fill_decks(new_game)
 
 # Starting the game [CR 103]
-shuffle_all()
+shuffle_all(new_game)
 # XXX in a match, loser of last game chooses
 # randrange is [start, stop) (exclusive)
-first_player = choose_first_player(random.randrange(len(players)))
-initial_draw()
-# print_hand_and_decks()
-first_untap_of_game()
+first_player = choose_first_player(new_game, random.randrange(len(new_game.players)))
+initial_draw(new_game)
+turn_actions.first_untap_of_game(new_game, first_player)
+
+
 
 # Playing around with play
 
@@ -152,12 +151,6 @@ def play(card: card_mod.Card, is_active, met_land_limit):
 # ^ then, you put it onto battlefield (usually from hand)
 # ^ no need for stack resolving or passing priority
 # !!!!    regain priorirty afterwards
-
-# 10 MINUTES HARD CODING QUICK COMMENTS LET'S GO!
-
-# you can only do stuff when game explicitly tells you you can****
-# you CAN'T affect ai doing stuff. you won't have the option to do ANYTHING!
-# XXX need to handle times where you CAN play one of your opponents cards
 
 # import abc
 #

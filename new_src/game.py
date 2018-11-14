@@ -9,10 +9,10 @@ class Game:
     players: typing.List[player_mod.Player]
 
     def __init__(self):
-        self._debug = False
-        self._ai_only = False
+        self.debug = False
+        self.ai_only = False
         self.players = None
-        self._battlefield = None
+        self.battlefield = None
         # XXX Better to cluster functions to a module, then clutter
         # ^ this namespace with functions related ONLY to that object!
         self._passes = passes.Passes()
@@ -44,7 +44,7 @@ class Game:
 
     # untap all of active player's permanents
     def untap_all_of_active(self):
-        for card in self._battlefield[self.active_index()]:
+        for card in self.battlefield[self.active_index()]:
             card.untap()
 
     def give_player_priority(self, index):
@@ -72,7 +72,7 @@ class Game:
                     # TODO play(card)
                     elif choice[0] == "TODO":
                         pass
-                    elif self._debug:
+                    elif self.debug:
                         # list of options available only if debugging
                         if choice[0] == "hand":
                             # XXX make a general "valid player index" method?
@@ -98,14 +98,14 @@ class Game:
                         print("ERROR: Invalid input")
 
             if index == 0:
-                if not self._ai_only:
+                if not self.ai_only:
                     user_has_priority()
                 else:
                     # TODO continue adding AI options in future!
                     # ai is making choice
                     pass
             else:
-                if self._debug:
+                if self.debug:
                     user_has_priority()
                 else:
                     # ai is making choice
