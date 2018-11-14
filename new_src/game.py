@@ -32,9 +32,6 @@ class Game:
     def _print_hand(self, index):
         print("P" + str(index + 1), "HAND:\n", self.players[index].hand)
 
-    def _passes(self):
-        return self._passes.passes
-
     # methods/classes to use during game
     def active_index(self):
         # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
@@ -51,7 +48,7 @@ class Game:
             card.untap()
 
     def give_player_priority(self, index):
-        if self.passes != len(self.players):
+        if self._passes.count != len(self.players):
             # ask the user for input
             def user_has_priority():
                 while True:
@@ -64,7 +61,7 @@ class Game:
                     # ^^ user may always look at the board state before a choice
                     # if just pressed enter (entered no input)
                     if not choice:
-                        passes.inc()
+                        self._passes.inc()
                         self.give_player_priority((index + 1) % len(self.players))
                         break
                     # list of options available (debugging or not)
@@ -118,4 +115,4 @@ class Game:
         else:
             # MUST RESET PASSES (else we're stuck in infinite loop)
             self._passes.reset()
-            turn_actions.start_next_step_or_phase(self.step_or_phase)
+            turn_actions.start_next_step_or_phase(self, self.step_or_phase)
