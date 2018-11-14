@@ -83,7 +83,7 @@ class Game:
                             except ValueError:
                                 print("ERROR: Invalid integer")
                             except IndexError:
-                                print("ERROR: Need 1 Player # parameter, given 0")
+                                print("ERROR: Need 1 player # parameter, given 0")
                             else:
                                 # XXX Apply EAFP ONLY when validating input, NOT LOGIC!
                                 # ^ I.e., checking for int/params is FINE! BUT we
@@ -94,7 +94,10 @@ class Game:
                                 if 0 <= index_1 < len(self.players):
                                     self._print_hand(index_1)
                                 else:
-                                    print("ERROR: Invalid Player #")
+                                    print("ERROR: Invalid player #")
+                        # could we combine this error message w/ final else?
+                        else:
+                            print("ERROR: Invalid input")
                     else:
                         print("ERROR: Invalid input")
 

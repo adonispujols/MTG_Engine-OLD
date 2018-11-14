@@ -66,7 +66,7 @@ def choose_first_player(game: game_mod.Game, index):
                 if 0 <= choice < len(game.players):
                     return choice
                 else:
-                    print("ERROR: Invalid Player #")
+                    print("ERROR: Invalid player #")
     if index == 0:
         if not game.ai_only:
             first = user_chooses_first_player()
