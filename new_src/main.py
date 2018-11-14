@@ -23,6 +23,7 @@ from new_src import turn_actions
 
 # XXX Don't forget about Planechase! Super fun!
 # XXX Use "_" for basic loops/not using item (not for i in range(len(iter)))
+# XXX Avoid unnecessary concatenation. Use ',' not '+ " "' for spaces! (without '')
 # XXX NEVER "SAFE" DELETE: It makes you *think* you don't need it, but you might of!
 # XXX Assume private fields/methods, then make public if needed by OTHER objects
 # ^ "Private" = strictly internal. I.e., NEVER USED outside the class or module/file

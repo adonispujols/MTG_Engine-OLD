@@ -1,6 +1,7 @@
 import typing
 from new_src import passes
 from new_src import turn_actions
+from new_src import turn_parts as tp
 from new_src import player as player_mod
 from new_src import stack
 from new_src import card as card_mod
@@ -57,9 +58,8 @@ class Game:
             # ask the user for input
             def user_has_priority():
                 while True:
-                    a = ""
-                    # splits choice into string list, separated by whitespaces
-                    choice = input("P(" + a + str(index + 1) + "): ").split()
+                    a_n = "A" if self.players[index].active else "N"
+                    choice = input("P" + str(index + 1) + " " + a_n + ": ").split()
                     # TODO here is where we add more choices for player
                     # ^ either actions requiring priority (play, activate, pass, etc)
                     # ^ OR ability to look at game state
@@ -158,8 +158,10 @@ class Game:
         if card.type == "Land":
             # check if at sorcery speed (priority is implied since play can only be
             # ^ be called if had priority)
-            main =
-            sorcery_speed = self._stack.is_empty() and is_active
+            in_main_phase = (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
+                    or self.step_or_phase == tp.TurnParts.POSTCOMBAT_MAIN)
+            sorcery_speed = in_main_phase and self._stack.is_empty() and is_active
+            # 1st is timing restriction, second is a specific restriction
             if sorcery_speed and under_land_limit:
                 # put on battlefield (typically from hand)
                 # need to move it from previous zone to battlefield

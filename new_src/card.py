@@ -11,5 +11,4 @@ class Card:
         if self._tapped:
             self._tapped = False
             return True
-        else:
-            return False
+        return False
