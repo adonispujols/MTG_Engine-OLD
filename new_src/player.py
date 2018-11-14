@@ -18,7 +18,7 @@ class Player:
         self.hand = None
         self.active = False
         self._lands_played = 0
-        self._lands_limit = 1
+        self._land_limit = 1
 
     def draw(self):
         self.hand.add(self.deck.pop())
@@ -29,5 +29,5 @@ class Player:
     def make_inactive(self):
         self.active = False
 
-    def met_land_limit(self):
-        return self._lands_played < self._lands_limit
+    def under_land_limit(self):
+        return self._lands_played < self._land_limit

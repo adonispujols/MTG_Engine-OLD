@@ -3,6 +3,6 @@ class Stack:
     #     self.
 
     def is_empty(self):
-        return False
+        return True
 
     # we PUSH to a stack

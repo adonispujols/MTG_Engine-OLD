@@ -89,9 +89,9 @@ class Game:
                             # XXX maybe we should push this player def up?
                             # Should we keep direct access to players or so?
                             # ^ Is that even possible (if not using array)?
-                            player = self.players[index]
-                            if 0 <= card_index < player.hand.size():
-                                self.play(player.hand, card_index, player.active, player.met_land_limit())
+                            p = self.players[index]  # p for player
+                            if 0 <= card_index < p.hand.size():
+                                self.play(p.hand, card_index, p.active, p.under_land_limit(), index)
                     elif self.debug:
                         # XXX Our code ignores extra input after what is understood
                         # ^ I.e., "hand 0 asdf" is translated as "hand 0"
@@ -121,7 +121,6 @@ class Game:
                             print("ERROR: Invalid input")
                     else:
                         print("ERROR: Invalid input")
-
             if index == 0:
                 if not self.ai_only:
                     user_has_priority()
@@ -150,16 +149,17 @@ class Game:
     # ^ literally just straight up think about how, you would go about playing a land.
     # ^ DO NOT WORRY about efficiency/super abstract design.
     # ^ we'll refactor/apply proper OOP principles once we're done!
-    def play(self, zone, card_index, is_active, met_land_limit, player_index):
+    def play(self, zone, card_index, is_active, under_land_limit, player_index):
         # with zone and index we can find the card
         # FIRST, just look at it. THEN pop once confirmed legal
         card = zone.get(card_index)
         # ELSE, IT, OR AT LEAST, CAST, WON'T KNOW WHAT TO DO
-        if card.type() == "Land":
+        if card.type == "Land":
             # check if at sorcery speed (priority is implied since play can only be
             # ^ be called if had priority)
+            main = 
             sorcery_speed = self._stack.is_empty() and is_active
-            if sorcery_speed and not met_land_limit:
+            if sorcery_speed and under_land_limit:
                 # put on battlefield (typically from hand)
                 # need to move it from previous zone to battlefield
                 zone.remove(card_index)

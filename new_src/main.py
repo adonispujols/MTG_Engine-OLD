@@ -10,6 +10,17 @@ from new_src import turn_actions
 # ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
+# XXX
+# 	CREATE SCRIPT TO QUICKLY TAKE YOU TO A POINT IN GAME!
+# AUTOMATE CHANGING PLYER WITHOUT THE OLD HACK OF EDITING/COMMENTING CODE
+# (won’t work on large codebases/lots of time + effort on stuff that will
+# just be deleted afterwards)#
+
+# Rollout testing suite confirming (on each run) that everything is
+# (and still is) okay!!!!!!!!
+# XXX
+
+
 # XXX Don't forget about Planechase! Super fun!
 # XXX Use "_" for basic loops/not using item (not for i in range(len(iter)))
 # XXX NEVER "SAFE" DELETE: It makes you *think* you don't need it, but you might of!
