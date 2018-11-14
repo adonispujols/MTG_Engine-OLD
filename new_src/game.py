@@ -29,11 +29,12 @@ class Game:
             print("P" + str(i + 1), "HAND:\n", player.hand,
                   "\nP" + str(i + 1), "DECK:\n", player.deck)
 
-    def _print_hand(self, index):
-        print("P" + str(index + 1), "HAND:\n", self.players[index].hand)
+    # move these to helper module if static!
+    def _print_hand(self, index, player):
+        print("P" + str(index + 1), "HAND:\n", player.hand)
 
-    def _player_prompt(self, index):
-        return "{} P{:d}: ".format(("A" if self.players[index].active else "N"), index + 1)
+    def _player_prompt(self, index, player):
+        return "{} P{:d}: ".format(("A" if player.active else "N"), index + 1)
 
     def _in_main_phase(self):
         return (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
@@ -103,9 +104,9 @@ class Game:
                         except IndexError:
                             print("ERROR: Need 1 player # parameter, given 0")
                         else:
-                            # XXX maybe we should push this player def. up?
-                            # Should we keep direct access to players or so?
-                            # ^ Is that even possible (if not using array)?
+                            # TODO VARIABLES FOR LIST[] DO SAVE COMPUTATION!
+                            # ^- A list[i] takes more work than just reading var
+                            # ^ So go ahead and have player = players[index]!
                             p = self.players[index]
                             if 0 <= card_index < p.hand.size():
                                 self.play(p.hand, card_index, index, p)
@@ -128,7 +129,7 @@ class Game:
                                 # - Essentially: Preemptively stop illegal game states
                                 # - from existing!
                                 if 0 <= p_index < len(self.players):
-                                    self._print_hand(p_index)
+                                    self._print_hand(p_index, self.players[p_index])
                                 else:
                                     print("ERROR: Invalid player #")
                         # could we combine this error message w/ final else?
