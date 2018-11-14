@@ -30,11 +30,6 @@ from new_src import turn_actions
 
 # methods/classes for setting up game
 # (before going through official "Starting the Game" steps [CR 103])
-def init_battlefield(game):
-    for _ in game.players:
-        game.battlefield.append([])
-
-
 # methods for officially "Starting the Game" [CR 103], in corresponding order
 def fill_decks(game):
     # fill each deck with 60 cards
@@ -43,6 +38,11 @@ def fill_decks(game):
         # else both decks will refer to same object!
         game.players[0].deck.add_top(card_mod.Card("one"))
         game.players[1].deck.add_top(card_mod.Card("two"))
+
+
+def init_battlefield(game):
+    for _ in game.players:
+        game.battlefield.append([])
 
 
 def shuffle_all(game):
@@ -99,9 +99,6 @@ new_game = game_mod.Game()
 new_game.debug = True
 # AI controls all players (including player 1), if true
 new_game.ai_only = False
-# cards in battlefield[player_index] pertain to that player
-new_game.battlefield = []
-init_battlefield(new_game)
 # player 1, the user by default, has index = 0
 # player 2+, the ai by default, has index = nth player - 1
 new_game.players = [player_mod.Player(), player_mod.Player()]
@@ -111,6 +108,9 @@ new_game.players[0].hand = hand.Hand()
 new_game.players[1].deck = deck.Deck()
 new_game.players[1].hand = hand.Hand()
 fill_decks(new_game)
+# cards in battlefield[player_index] pertain to that player
+new_game.battlefield = []
+init_battlefield(new_game)
 
 # Starting the game [CR 103]
 shuffle_all(new_game)
