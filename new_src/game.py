@@ -19,17 +19,11 @@ class Game:
         self.players = None
         self.battlefield = None
         self._stack = stack.Stack()
-        # XXX Better to cluster functions to a module, then clutter
-        # ^ this namespace with functions related ONLY to that object!
         self._passes = passes.Passes()
         # Initially none since game isn't at untap yet (officially)
         self.step_or_phase = None
-        # XXX DO NOT SET STATIC MODULES/CLASSES TO FIELD. JUST CALL IT!
-        # We only "init" actual instances, not some helper method/constants!
 
-    # print methods
     def _print_hand_and_decks(self):
-        # some objects have __repr__ defined (to simplify printing)
         # XXX Use ID when comparing objects (as you should)
         for i, player in enumerate(self.players):
             print("P" + str(i + 1), "HAND:\n", player.hand,
@@ -38,7 +32,9 @@ class Game:
     def _print_hand(self, index):
         print("P" + str(index + 1), "HAND:\n", self.players[index].hand)
 
-    # methods/classes to use during game
+    def _player_prompt(self, index):
+        return "P{:d} {}: ".format(index + 1, ("A" if self.players[index].active else "N"))
+
     def active_index(self):
         # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
         for i, player in enumerate(self.players):
@@ -48,7 +44,6 @@ class Game:
     def active_player(self):
         return self.players[self.active_index()]
 
-    # untap all of active player's permanents
     def untap_all_of_active(self):
         for card in self.battlefield[self.active_index()]:
             card.untap()
@@ -58,27 +53,25 @@ class Game:
             # ask the user for input
             def user_has_priority():
                 while True:
-                    a_n = "A" if self.players[index].active else "N"
-                    choice = input("P" + str(index + 1) + " " + a_n + ": ").split()
+                    # a_n = "A" if self.players[index].active else "N"
+                    choice = input(self._player_prompt(index)).split()
                     # TODO here is where we add more choices for player
                     # ^ either actions requiring priority (play, activate, pass, etc)
                     # ^ OR ability to look at game state
                     # ^^ XXX could organize ALL input asks such that:
                     # ^^ user may always look at the board state before a choice
-                    # if just pressed enter (entered no input)
                     if not choice:
                         self._passes.inc()
                         self.give_player_priority((index + 1) % len(self.players))
                         break
-                    # list of options available (debugging or not)
                     # TODO implement user-limited commands (no debug)
                     # ^ normally, user's knowledge of game is limited
                     # ^ he can't just randomly search through hands, decks, etc
-                    # ^ EX: hand-self prints own hand of player
+                    # ^ EX: "hand-self" prints own hand of player
                     # TODO play(card)
                     elif choice[0] == "play":
                         # TODO allow for playing from other zones
-                        # player chooses a card from hand (just hand for now)
+                        # player chooses a card from a zone (just hand for now)
                         try:
                             # enter card # in hand (counting left to right)
                             card_index = int(choice[1]) - 1
@@ -87,16 +80,15 @@ class Game:
                         except IndexError:
                             print("ERROR: Need 1 player # parameter, given 0")
                         else:
-                            # XXX maybe we should push this player def up?
+                            # XXX maybe we should push this player def. up?
                             # Should we keep direct access to players or so?
                             # ^ Is that even possible (if not using array)?
-                            p = self.players[index]  # p for player
+                            p = self.players[index]
                             if 0 <= card_index < p.hand.size():
                                 self.play(p.hand, card_index, p.active, p.under_land_limit(), index)
                     elif self.debug:
                         # XXX Our code ignores extra input after what is understood
                         # ^ I.e., "hand 0 asdf" is translated as "hand 0"
-                        # list of options available only if debugging
                         if choice[0] == "hand":
                             # XXX make a general "valid player index" method?
                             try:
@@ -133,7 +125,6 @@ class Game:
                 if self.debug:
                     user_has_priority()
                 else:
-                    # ai is making choice
                     pass
         # TODO need to take into account actions taken in between passes!
         # "passed in succession"

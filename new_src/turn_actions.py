@@ -7,7 +7,6 @@ from new_src import turn_parts as tp
 def first_untap_of_game(game: "game_mod.Game", first_player):
     game.step_or_phase = tp.TurnParts.UNTAP
     print("Start: First Untap step")
-    # at start, no one is active, so we must directly make 1st player active.
     game.players[first_player].make_active()
     print("Active Player:", first_player + 1)
     # TBA = "Turn-Based Action", SBA = "State-Based Action"
@@ -21,7 +20,6 @@ def first_untap_of_game(game: "game_mod.Game", first_player):
 def _untap(game: "game_mod.Game"):
     print("Start: Untap step")
     game.step_or_phase = tp.TurnParts.UNTAP
-    # change active player to the next
     prev_active = game.active_index()
     game.players[prev_active].make_inactive()
     new_active = (prev_active + 1) % len(game.players)
@@ -35,7 +33,6 @@ def _untap(game: "game_mod.Game"):
 def _upkeep(game: "game_mod.Game"):
     print("Start: Upkeep")
     game.step_or_phase = tp.TurnParts.UPKEEP
-    # give the active player priority
     game.give_player_priority(game.active_index())
 
 
@@ -99,7 +96,7 @@ def _post_combat(game: "game_mod.Game"):
     game.give_player_priority(game.active_index())
 
 
-def _end(game: "game_mod.Game"):
+def _end_step(game: "game_mod.Game"):
     print("Start: End Step")
     game.step_or_phase = tp.TurnParts.END_STEP
     game.give_player_priority(game.active_index())
@@ -113,7 +110,7 @@ def _cleanup(game: "game_mod.Game"):
 
 _START_METHODS = (_untap, _upkeep, _draw, _pre_combat, _begin_combat,
                   _declare_attackers, _declare_blockers, _first_strike_damage,
-                  _combat_damage, _end_combat, _post_combat, _end, _cleanup)
+                  _combat_damage, _end_combat, _post_combat, _end_step, _cleanup)
 
 
 def start_next_step_or_phase(game, index):

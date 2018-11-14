@@ -89,7 +89,6 @@ def choose_first_player(game: game_mod.Game, index):
         if game.debug:
             first = user_chooses_first_player()
         else:
-            # ai is making choice (by default, chooses itself)
             first = index
     print("P" + str(first + 1), "goes first.")
     return first
