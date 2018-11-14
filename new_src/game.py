@@ -21,7 +21,7 @@ class Game:
         # XXX DO NOT SET STATIC MODULES/CLASSES TO FIELD. JUST CALL IT!
         # We only "init" actual instances, not some helper method/constants!
 
-    # utility methods
+    # print methods
     def _print_hand_and_decks(self):
         # some objects have __repr__ defined (to simplify printing)
         # XXX Use ID when comparing objects (as you should)
@@ -31,6 +31,9 @@ class Game:
 
     def _print_hand(self, index):
         print("P" + str(index + 1), "HAND:\n", self.players[index].hand)
+
+    def _passes(self):
+        return self._passes.passes
 
     # methods/classes to use during game
     def active_index(self):
