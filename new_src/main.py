@@ -36,8 +36,8 @@ def fill_decks(game):
     for _ in range(60):
         # each card must be a new, separate object,
         # else both decks will refer to same object!
-        game.players[0].deck.add_top(card_mod.Card("one"))
-        game.players[1].deck.add_top(card_mod.Card("two"))
+        game.players[0].deck.push(card_mod.Card("one"))
+        game.players[1].deck.push(card_mod.Card("two"))
 
 
 def init_battlefield(game):

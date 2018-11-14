@@ -3,11 +3,13 @@ from new_src import passes
 from new_src import turn_actions
 from new_src import player as player_mod
 from new_src import stack
+from new_src import card as card_mod
 # XXX Always forward reference types (wrap in string) to avoid import errors!
 # ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
 class Game:
+    battlefield: typing.List[typing.List["card_mod.Card"]]
     players: typing.List["player_mod.Player"]
 
     def __init__(self):
@@ -97,7 +99,7 @@ class Game:
                         if choice[0] == "hand":
                             # XXX make a general "valid player index" method?
                             try:
-                                # "p_index" means player index
+                                # "p_index" means player index/index param
                                 p_index = int(choice[1]) - 1
                             except ValueError:
                                 print("ERROR: Invalid integer")
@@ -148,9 +150,10 @@ class Game:
     # ^ literally just straight up think about how, you would go about playing a land.
     # ^ DO NOT WORRY about efficiency/super abstract design.
     # ^ we'll refactor/apply proper OOP principles once we're done!
-    def play(self, zone, index, is_active, met_land_limit):
+    def play(self, zone, card_index, is_active, met_land_limit, player_index):
         # with zone and index we can find the card
-        card = zone.
+        # FIRST, just look at it. THEN pop once confirmed legal
+        card = zone.get(card_index)
         # ELSE, IT, OR AT LEAST, CAST, WON'T KNOW WHAT TO DO
         if card.type() == "Land":
             # check if at sorcery speed (priority is implied since play can only be
@@ -159,7 +162,8 @@ class Game:
             if sorcery_speed and not met_land_limit:
                 # put on battlefield (typically from hand)
                 # need to move it from previous zone to battlefield
-                pass
+                zone.remove(card_index)
+                self.battlefield[player_index].append(card)
 
     # to play a land
     # check if card is a land:

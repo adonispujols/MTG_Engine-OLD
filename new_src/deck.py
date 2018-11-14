@@ -8,7 +8,7 @@ class Deck:
     def __repr__(self):
         return str(self._deck)
 
-    def add_top(self, card):
+    def push(self, card):
         self._deck.append(card)
 
     def shuffle(self):
