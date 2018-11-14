@@ -6,7 +6,7 @@ from new_src import turn_parts as tp
 
 def first_untap_of_game(game: "game_mod.Game", first_player):
     game.step_or_phase = tp.TurnParts.UNTAP
-    print("Start of First Untap Step")
+    print("Start: First Untap step")
     # at start, no one is active, so we must directly make 1st player active.
     game.players[first_player].make_active()
     print("Active Player:", first_player + 1)
@@ -19,7 +19,7 @@ def first_untap_of_game(game: "game_mod.Game", first_player):
 
 
 def _untap(game: "game_mod.Game"):
-    print("Start of Untap Step")
+    print("Start: Untap step")
     game.step_or_phase = tp.TurnParts.UNTAP
     # change active player to the next
     prev_active = game.active_index()
@@ -33,7 +33,7 @@ def _untap(game: "game_mod.Game"):
 
 
 def _upkeep(game: "game_mod.Game"):
-    print("Start of Upkeep Step")
+    print("Start: Upkeep")
     game.step_or_phase = tp.TurnParts.UPKEEP
     # give the active player priority
     game.give_player_priority(game.active_index())
@@ -41,7 +41,7 @@ def _upkeep(game: "game_mod.Game"):
 
 def _draw(game: "game_mod.Game"):
     # TODO must skip if 1st player's 1st draw (if 1v1 or 2-headed giant)
-    print("Start of Draw Step")
+    print("Start: Draw")
     game.step_or_phase = tp.TurnParts.DRAW
     print("TBA: Active draws")
     game.active_player().draw()
@@ -49,32 +49,32 @@ def _draw(game: "game_mod.Game"):
 
 
 def _pre_combat(game: "game_mod.Game"):
-    print("Start of Precombat Main Phase")
-    game.step_or_phase = tp.TurnParts.PRE_COMBAT
+    print("Start: Precombat Main")
+    game.step_or_phase = tp.TurnParts.PRECOMBAT_MAIN
     game.give_player_priority(game.active_index())
 
 
 def _begin_combat(game: "game_mod.Game"):
-    print("Start of Beginning of Combat Step")
+    print("Start: Begin Combat")
     game.step_or_phase = tp.TurnParts.BEGIN_COMBAT
     game.give_player_priority(game.active_index())
 
 
 def _declare_attackers(game: "game_mod.Game"):
-    print("Start of Declare Attackers Step")
+    print("Start: Declare Attackers")
     # TODO need to skip to end if no attackers declared
     game.step_or_phase = tp.TurnParts.DECLARE_ATTACKERS
     game.give_player_priority(game.active_index())
 
 
 def _declare_blockers(game: "game_mod.Game"):
-    print("Start of Declare Blockers Step")
+    print("Start: Declare Blockers")
     game.step_or_phase = tp.TurnParts.DECLARE_BLOCKERS
     game.give_player_priority(game.active_index())
 
 
 def _first_strike_damage(game: "game_mod.Game"):
-    print("Start of First Strike Damage Step")
+    print("Start: First Strike Damage")
     # TODO need to skip to combat damage if no creatures wih first strike
     # ^ on either side of the field
     game.step_or_phase = tp.TurnParts.FIRST_STRIKE_DAMAGE
@@ -82,31 +82,31 @@ def _first_strike_damage(game: "game_mod.Game"):
 
 
 def _combat_damage(game: "game_mod.Game"):
-    print("Start of Combat Damage Step")
+    print("Start: Combat Damage")
     game.step_or_phase = tp.TurnParts.COMBAT_DAMAGE
     game.give_player_priority(game.active_index())
 
 
 def _end_combat(game: "game_mod.Game"):
-    print("Start of End of Combat Step")
+    print("Start: End of Combat")
     game.step_or_phase = tp.TurnParts.END_COMBAT
     game.give_player_priority(game.active_index())
 
 
 def _post_combat(game: "game_mod.Game"):
-    print("Start of Postcombat Main Phase")
-    game.step_or_phase = tp.TurnParts.POST_COMBAT
+    print("Start: Postcombat Main")
+    game.step_or_phase = tp.TurnParts.POSTCOMBAT_MAIN
     game.give_player_priority(game.active_index())
 
 
 def _end(game: "game_mod.Game"):
-    print("Start of End Step")
+    print("Start: End Step")
     game.step_or_phase = tp.TurnParts.END_STEP
     game.give_player_priority(game.active_index())
 
 
 def _cleanup(game: "game_mod.Game"):
-    print("Start of Cleanup Step")
+    print("Start: Cleanup")
     game.step_or_phase = tp.TurnParts.CLEANUP
     _untap(game)
 

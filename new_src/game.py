@@ -57,8 +57,9 @@ class Game:
             # ask the user for input
             def user_has_priority():
                 while True:
+                    a = ""
                     # splits choice into string list, separated by whitespaces
-                    choice = input("P" + str(index + 1) + ": ").split()
+                    choice = input("P(" + a + str(index + 1) + "): ").split()
                     # TODO here is where we add more choices for player
                     # ^ either actions requiring priority (play, activate, pass, etc)
                     # ^ OR ability to look at game state
