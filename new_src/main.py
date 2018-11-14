@@ -127,7 +127,7 @@ turn_actions.first_untap_of_game(new_game, first_player)
 stack = stack_mod.Stack()
 
 
-# the USER/AI plays cards, NOT the player object!
+# the USER/AI plays cards, NOT the player object! 
 # ^ It's something the actual player DOES on the CARD
 # TODO start with playing a land!
 # ^ literally just straight up think about how, you would go about playing a land.
