@@ -42,8 +42,9 @@ class Game:
     def _sorcery_speed(self, is_active):
         return is_active and self._in_main_phase() and self._stack.is_empty()
 
-    def met_restrictions(self, restrictions):
-        for restriction in restriction
+    def _met_land_restrictions(self, index):
+        return self._sorcery_speed(self.players[index].active)\
+               and self.players[index].under_land_limit()
 
     def active_index(self):
         # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
@@ -93,8 +94,7 @@ class Game:
                             # ^ Is that even possible (if not using array)?
                             p = self.players[index]
                             if 0 <= card_index < p.hand.size():
-                                self.play(p.hand, card_index, self._sorcery_speed(p.active),
-                                          p.under_land_limit(), index)
+                                self.play(p.hand, card_index, index)
                     elif self.debug:
                         # XXX Our code ignores extra input after what is understood
                         # ^ I.e., "hand 0 asdf" is translated as "hand 0"
@@ -140,11 +140,12 @@ class Game:
             self._passes.reset()
             turn_actions.start_next_step_or_phase(self, self.step_or_phase)
 
-    def play(self, zone, card_index, sorcery_speed, under_land_limit, player_index):
+    def play(self, zone, card_index, player_index):
         card = zone.get(card_index)
         if card.type == "Land":
-            if under_land_limit and sorcery_speed():
+            if self._met_land_restrictions(player_index):
                 # put on battlefield (typically from hand)
                 # need to move it from previous zone to battlefield
                 zone.remove(card_index)
                 self.battlefield[player_index].append(card)
+        # if card.type == "Creature"
