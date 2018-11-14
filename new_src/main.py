@@ -20,7 +20,7 @@ from new_src import turn_actions
 # XXX Keep code compatible code with multiplayer & ai vs ai!
 # XXX Always let code fail gracefully on invalid input (if reversible)!
 # XXX Stay Pythonic! Throw exceptions on actual errors, rather than check ahead!
-# XXX Try generalizing ai behavior to a script or so?
+# XXX Try generalizing ai behavior to a script or so? 
 # XXX Maintain a complete, solid CLI to depend on during GUI dev.
 # ^ This is ALWAYS our main focus, with ports made to GUI when ready.
 # XXX need to handle times where you CAN play one of your opponents cards
