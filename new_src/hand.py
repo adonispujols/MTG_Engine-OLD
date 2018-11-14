@@ -7,3 +7,6 @@ class Hand:
 
     def add(self, card):
         self._hand.append(card)
+
+    def size(self):
+        return len(self._hand)

@@ -5,11 +5,11 @@ from new_src import turn_parts as tp
 
 
 def first_untap_of_game(game: "game_mod.Game", first_player):
-    print("Start of First Untap Step")
     game.step_or_phase = tp.TurnParts.UNTAP
+    print("Start of First Untap Step")
     # at start, no one is active, so we must directly make 1st player active.
     game.players[first_player].make_active()
-    print("Active Player:", first_player)
+    print("Active Player:", first_player + 1)
     # TBA = "Turn-Based Action", SBA = "State-Based Action"
     print("TBA: Active untaps all")
     # XXX should game be doing this, or should we get the active player,
@@ -27,8 +27,8 @@ def _untap(game: "game_mod.Game"):
     new_active = (prev_active + 1) % len(game.players)
     game.players[new_active].make_active()
     print("Active Player:", new_active + 1)
-    print("TBA: Active untaps all")
     game.untap_all_of_active()
+    print("TBA: Active untaps all")
     _upkeep(game)
 
 
@@ -101,7 +101,7 @@ def _post_combat(game: "game_mod.Game"):
 
 def _end(game: "game_mod.Game"):
     print("Start of End Step")
-    game.step_or_phase = tp.TurnParts.END_COMBAT
+    game.step_or_phase = tp.TurnParts.END_STEP
     game.give_player_priority(game.active_index())
 
 

@@ -13,5 +13,5 @@ class TurnParts(enum.Enum):
     COMBAT_DAMAGE = 8
     END_COMBAT = 9
     POST_COMBAT = 10
-    END = 11
+    END_STEP = 11
     CLEANUP = 12

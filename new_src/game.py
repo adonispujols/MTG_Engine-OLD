@@ -1,7 +1,8 @@
+import typing
 from new_src import passes
 from new_src import turn_actions
-import typing
 from new_src import player as player_mod
+from new_src import stack
 # XXX Always forward reference types (wrap in string) to avoid import errors!
 # ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
@@ -14,6 +15,7 @@ class Game:
         self.ai_only = False
         self.players = None
         self.battlefield = None
+        self._stack = stack.Stack()
         # XXX Better to cluster functions to a module, then clutter
         # ^ this namespace with functions related ONLY to that object!
         self._passes = passes.Passes()
@@ -71,15 +73,32 @@ class Game:
                     # ^ he can't just randomly search through hands, decks, etc
                     # ^ EX: hand-self prints own hand of player
                     # TODO play(card)
-                    elif choice[0] == "TODO":
-                        pass
+                    elif choice[0] == "play":
+                        # TODO allow for playing from other zones
+                        # player chooses a card from hand (just hand for now)
+                        try:
+                            # enter card # in hand (counting left to right)
+                            card_index = int(choice[1]) - 1
+                        except ValueError:
+                            print("ERROR: Invalid integer")
+                        except IndexError:
+                            print("ERROR: Need 1 player # parameter, given 0")
+                        else:
+                            # XXX maybe we should push this player def up?
+                            # Should we keep direct access to players or so?
+                            # ^ Is that even possible (if not using array)?
+                            player = self.players[index]
+                            if 0 <= card_index < player.hand.size():
+                                self.play(player.hand, card_index, player.active, player.met_land_limit())
                     elif self.debug:
+                        # XXX Our code ignores extra input after what is understood
+                        # ^ I.e., "hand 0 asdf" is translated as "hand 0"
                         # list of options available only if debugging
                         if choice[0] == "hand":
                             # XXX make a general "valid player index" method?
                             try:
-                                # index<_n> are just aliases for player index
-                                index_1 = int(choice[1]) - 1
+                                # "p_index" means player index
+                                p_index = int(choice[1]) - 1
                             except ValueError:
                                 print("ERROR: Invalid integer")
                             except IndexError:
@@ -91,8 +110,8 @@ class Game:
                                 # ^ invalid actions to run until error is caught!!!
                                 # - Essentially: Preemptively stop illegal game states
                                 # - from existing!
-                                if 0 <= index_1 < len(self.players):
-                                    self._print_hand(index_1)
+                                if 0 <= p_index < len(self.players):
+                                    self._print_hand(p_index)
                                 else:
                                     print("ERROR: Invalid player #")
                         # could we combine this error message w/ final else?
@@ -120,3 +139,36 @@ class Game:
             # MUST RESET PASSES (else we're stuck in infinite loop)
             self._passes.reset()
             turn_actions.start_next_step_or_phase(self, self.step_or_phase)
+
+    # Playing around with play
+
+    # the USER/AI plays cards, NOT the player object!
+    # ^ It's something the actual player DOES on the CARD
+    # TODO start with playing a land!
+    # ^ literally just straight up think about how, you would go about playing a land.
+    # ^ DO NOT WORRY about efficiency/super abstract design.
+    # ^ we'll refactor/apply proper OOP principles once we're done!
+    def play(self, zone, index, is_active, met_land_limit):
+        # with zone and index we can find the card
+        # ELSE, IT, OR AT LEAST, CAST, WON'T KNOW WHAT TO DO
+        if card.type() == "Land":
+            # check if at sorcery speed (priority is implied since play can only be
+            # ^ be called if had priority)
+            sorcery_speed = self._stack.is_empty() and is_active
+            if sorcery_speed and not met_land_limit:
+                # put on battlefield (typically from hand)
+                # need to move it from previous zone to battlefield
+                pass
+
+    # to play a land
+    # check if card is a land:
+    # ^ this is a special action that requires:
+    # - sorcery speed (priority (given), stack is empty, is their turn (is active))
+    # & - lands played < lands limit
+    # ^ then, you put it onto battlefield (usually from hand)
+    # ^ no need for stack resolving or passing priority
+    # !!!!    regain priorirty afterwards
+    # "losing" priority just means game is doing stuff and you can't interact
+    # with it (not accepting input)
+    # "gaining" priority means the game is taking input again
+
