@@ -1,9 +1,9 @@
 class Passes:
     def __init__(self):
-        self.passes = 0
+        self.count = 0
 
     def inc(self):
-        self.passes += 1
+        self.count += 1
 
     def reset(self):
-        self.passes = 0
+        self.count = 0
