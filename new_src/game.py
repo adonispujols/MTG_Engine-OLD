@@ -42,11 +42,19 @@ class Game:
     def _sorcery_speed(self, is_active):
         return is_active and self._in_main_phase() and self._stack.is_empty()
 
-    def _met_land_restrictions(self, index):
-        return self._sorcery_speed(self.players[index].active)\
-               and self.players[index].under_land_limit()
+    def _met_land_restrictions(self, player):
+        return self._sorcery_speed(player.active) and player.under_land_limit()
 
-    # XXX don't pass index if you need the player (modify an attribute)
+    # TODO Refactor: don't pass index if you need the player (for api)
+    # ^ TODO BUT, you ONLY need an object to use its api
+    # ^ YOU NEVER (except in rare cases, like init) modify a field directly!
+    # ^ YOU MAY "get" a field, but as a PARAM. You may NOT do object.foo ... etc
+    # TODO Make index a player property? <- Need to track deaths, then
+    # ^ likely yes (much simpler, esp since it's static)
+    # ^ for deaths: either del player & update all indices,
+    # ^ or make empty & skip over, or...
+    # TODO confirm if CARD index (in zone) should be a property, too!
+    # ^ most likely not
     def active_index(self):
         # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
         for i, player in enumerate(self.players):
@@ -100,7 +108,7 @@ class Game:
                             # ^ Is that even possible (if not using array)?
                             p = self.players[index]
                             if 0 <= card_index < p.hand.size():
-                                self.play(p.hand, card_index, index)
+                                self.play(p.hand, card_index, index, p)
                     elif self.debug:
                         # XXX Our code ignores extra input after what is understood
                         # ^ I.e., "hand 0 asdf" is translated as "hand 0"
@@ -141,22 +149,32 @@ class Game:
                 else:
                     pass
 
+    # TODO Rafactor params to represent ALL info needed (even redundant object)
+    # ^ I.e., even if you need both player.index AND player, those are TWO
+    # ^ SEPARATE params (that we may later then refactor to remove player from)
     # XXX Only pass the EXACT object you need! Not an object containing it!
     # ^ i.e, what's the closest possible object you need to do your work?
     # ^ e.g., if you need a hand, just get the hand, NOT player (for player.hand)
     # XXX WARNING: You can ONLY edit stuff by accessing it's wrapper!
     # ^ Thus, any operation on "class.foo" has to be done via class.foo = ...
     # ^ NOT passed as a param! Direct param loses class context, so can't edit
+    # XXX IT IS *PLAY'S* JOB TO PARSE THE INFO NEEDED FROM PLAYER
+    # ^ *NOT* THE THING SIMPLY CALLING IT FROM INPUT
+    # ^ Give play the minimum it should expect from input,
+    # ^ and let PLAY sort out the rest!
     def play(self, zone, card_index, player_index, player):
         card = zone.get(card_index)
         if card.type == "Land":
-            play_land
-            if self._met_land_restrictions(player_index):
-                zone.remove(card_index)
-                self.battlefield[player_index].append(card)
-                # XXX Always increment afterwards (if you can) so it's only
-                # ^ done on success
-                lands_played
-
+            self.play_land(card, zone, card_index, player_index, player, player.lands_played)
         # elif card.type == "Creature"
-    def play_land(self, card, zone, card_index, player_index, lands_played):
+
+    # XXX since met land restrictions requires player, play_land, TOO, requires
+    # ^ it! Just passing it as an index so we can call players[index] is both
+    # ^ deceptive, clunky, AND inefficient!
+    def play_land(self, card, zone, card_index, player_index, player, lands_played):
+        if self._met_land_restrictions(player):
+            zone.remove(card_index)
+            self.battlefield[player_index].append(card)
+            # XXX Always increment afterwards (if you can) so it's only
+            # ^ done on success
+            lands_played.inc()
