@@ -140,6 +140,7 @@ class Game:
             self._passes.reset()
             turn_actions.start_next_step_or_phase(self, self.step_or_phase)
 
+    # TODO don't pass index if you need the player (modify an attribute)
     def play(self, zone, card_index, player_index):
         card = zone.get(card_index)
         if card.type == "Land":
@@ -148,4 +149,7 @@ class Game:
                 # need to move it from previous zone to battlefield
                 zone.remove(card_index)
                 self.battlefield[player_index].append(card)
+                # TODO ACTUALLT INCREMENT LANDS PLAYED
+                # TODO ACTUALLT INCREMENT LANDS PLAYED
+                # TODO ACTUALLT INCREMENT LANDS PLAYED
         # if card.type == "Creature"
