@@ -1,6 +1,7 @@
 from new_src import passes
 from new_src import turn_parts
 from new_src import turn_actions
+# XXX avoid importing just for type checking (risks cyclic importing)
 
 class Game:
     def __init__(self):
@@ -24,7 +25,7 @@ class Game:
             print("P" + str(i + 1), "HAND:\n", player.hand,
                   "\nP" + str(i + 1), "DECK:\n", player.deck)
 
-    def _print_hand(index):
+    def _print_hand(self, index):
         print("P" + str(index + 1), "HAND:\n", self.players[index].hand)
 
     # methods/classes to use during game

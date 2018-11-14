@@ -7,6 +7,7 @@ from new_src import hand
 from new_src import stack as stack_mod
 
 
+# XXX Don't forget about Planechase! Super fun!
 # XXX NEVER "SAFE" DELETE: It makes you *think* you don't need it, but you might of!
 # XXX Assume private fields/methods, then make public if needed by OTHER objects
 # ^ "OTHER" includes anything outside + inner objects/modules

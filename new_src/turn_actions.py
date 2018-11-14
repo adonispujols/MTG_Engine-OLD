@@ -1,23 +1,10 @@
-# Helper methods for game
-# methods/classes related to (specifically) turn based actions
-
-# we have parts of turn class holding constants
-# turn based makes step or phase = parts of turn.STEP_OR_PHASE
-# game can check if current step or phase is parts_of_turn.STEP_OR_PHASE
-# now, if it's an index, or string, or whatever, we only change it in two places!
-# ^ make untap = 0 then turn based list/dic shifts appropriately!
-
-
-
-
-# SET INITIAL TO NONE (will be set later <- mkaes much more sense
-# ^ since tech. we aren't at untap yet (game hasn't started)
+from new_src import game as game_mod
+from new_src import turn_parts as tp
 
 # XXX try to make this share code with untap
-def first_untap_of_game(self, first_player):
+def first_untap_of_game(game: game_mod.Game, first_player):
     print("Start of First Untap Step")
-    step_or_phase.index = 0
-    # ^ XXX evil sets? (along with rest of step_or_phase.index = x)
+    game.step_or_phase = tp.TurnParts.UNTAP
     # at start, no one is active, so we must directly make 1st player active.
     self._players[first_player].make_active()
     print("Active Player:", self.active_index() + 1)
@@ -26,9 +13,9 @@ def first_untap_of_game(self, first_player):
     self._upkeep()
 
 
-def _untap(self):
+def _untap(game: game_mod.Game):
     print("Start of Untap Step")
-    step_or_phase.index = 0
+    game.step_or_phase = tp.TurnParts.UNTAP
     # change active player to the next
     prev_active_index = self.active_index()
     self.active_player().make_inactive()
@@ -43,83 +30,83 @@ def _untap(self):
     self._upkeep()
 
 
-def _upkeep(self):
+def _upkeep(game: game_mod.Game):
     print("Start of Upkeep Step")
-    step_or_phase.index = 1
+    game.step_or_phase = tp.TurnParts.UNTAP
     give_player_priority(active_index())
 
 
-def _draw(self):
+def _draw(game: game_mod.Game):
     # TODO must skip if 1st player's 1st draw (if 1v1 or 2-headed giant)
     print("Start of Draw Step")
-    step_or_phase.index = 2
+    game.step_or_phase = tp.TurnParts.UNTAP
     print("TBA: Draw")
     active_player().draw()
     print_hand_and_decks()
     give_player_priority(active_index())
 
 
-def _pre_combat(self):
+def _pre_combat(game: game_mod.Game):
     print("Start of Precombat Main Phase")
-    step_or_phase.index = 3
+    game.step_or_phase = tp.TurnParts.UNTAP
     give_player_priority(active_index())
 
 
-def _begin_combat(self):
+def _begin_combat(game: game_mod.Game):
     print("Start of Beginning of Combat Step")
-    step_or_phase.index = 4
+    game.step_or_phase = tp.TurnParts.UNTAP
     give_player_priority(active_index())
 
 
-def _declare_attackers(self):
+def _declare_attackers(game: game_mod.Game):
     print("Start of Declare Attackers Step")
     # TODO need to skip to end if no attackers declared
-    step_or_phase.index = 5
+    game.step_or_phase = tp.TurnParts.UNTAP
     give_player_priority(active_index())
 
 
-def _declare_blockers(self):
+def _declare_blockers(game: game_mod.Game):
     print("Start of Declare Blockers Step")
-    step_or_phase.index = 6
+    game.step_or_phase = tp.TurnParts.UNTAP
     give_player_priority(active_index())
 
 
-def _first_strike_damage(self):
+def _first_strike_damage(game: game_mod.Game):
     print("Start of First Strike Damage Step")
     # TODO need to skip to combat damage if no creatures wih first strike
     # ^ on either side of the field
-    step_or_phase.index = 7
+    game.step_or_phase = tp.TurnParts.UNTAP
     give_player_priority(active_index())
 
 
-def _combat_damage(self):
+def _combat_damage(game: game_mod.Game):
     print("Start of Combat Damage Step")
-    step_or_phase.index = 8
+    game.step_or_phase = tp.TurnParts.UNTAP
     give_player_priority(active_index())
 
 
-def _end_combat(self):
+def _end_combat(game: game_mod.Game):
     print("Start of End of Combat Step")
-    step_or_phase.index = 9
+    game.step_or_phase = tp.TurnParts.UNTAP
     give_player_priority(active_index())
 
 
-def _post_combat(self):
+def _post_combat(game: game_mod.Game):
     print("Start of Postcombat Main Phase")
-    step_or_phase.index = 10
+    game.step_or_phase = tp.TurnParts.UNTAP
     print("Step or Phase:", step_or_phase.index)
     give_player_priority(active_index())
 
 
-def _end(self):
+def _end(game: game_mod.Game):
     print("Start of End Step")
-    step_or_phase.index = 11
+    game.step_or_phase = tp.TurnParts.UNTAP
     give_player_priority(active_index())
 
 
-def _cleanup(self):
+def _cleanup(game: game_mod.Game):
     print("Start of Cleanup Step")
-    step_or_phase.index = 12
+    game.step_or_phase = tp.TurnParts.UNTAP
     untap()
 
 
