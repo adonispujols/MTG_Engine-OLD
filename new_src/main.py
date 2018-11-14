@@ -1,4 +1,3 @@
-import typing
 import random
 from new_src import player as player_mod
 from new_src import deck
@@ -117,7 +116,6 @@ shuffle_all(new_game)
 first_player = choose_first_player(new_game, random.randrange(len(new_game.players)))
 initial_draw(new_game)
 turn_actions.first_untap_of_game(new_game, first_player)
-
 
 
 # Playing around with play
