@@ -3,7 +3,8 @@ from new_src import turn_parts as tp
 # XXX avoid importing just for type checking (risks cyclic importing)
 
 
-def first_untap_of_game(game: game_mod.Game, first_player):
+def first_untap_of_game(game: "game_mod.Game", first_player):
+    game.g
     print("Start of First Untap Step")
     game.step_or_phase = tp.TurnParts.UNTAP
     # at start, no one is active, so we must directly make 1st player active.
@@ -11,6 +12,8 @@ def first_untap_of_game(game: game_mod.Game, first_player):
     print("Active Player:", first_player)
     # TBA = "Turn-Based Action", SBA = "State-Based Action"
     print("TBA: Untap all")
+    # XXX should game be doing this, or should we get the active player,
+    # ^ then untap all their stuff (since it makes sense here)?
     game.untap_all_of_active()
     _upkeep(game)
 
