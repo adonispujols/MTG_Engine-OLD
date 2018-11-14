@@ -2,11 +2,12 @@ from new_src import passes
 from new_src import turn_actions
 import typing
 from new_src import player as player_mod
-# XXX avoid importing just for type checking (risks cyclic importing)
+# XXX Always forward reference types (wrap in string) to avoid import errors!
+# ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
 class Game:
-    players: typing.List[player_mod.Player]
+    players: typing.List["player_mod.Player"]
 
     def __init__(self):
         self.debug = False

@@ -6,6 +6,8 @@ from new_src import hand
 from new_src import stack as stack_mod
 from new_src import game as game_mod
 from new_src import turn_actions
+# XXX Always forward reference types (wrap in string) to avoid import errors!
+# ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
 # XXX Don't forget about Planechase! Super fun!
@@ -87,8 +89,9 @@ def initial_draw(game):
             player.draw()
 
 
-# XXX Constantly peeking into game implies GAME should probably do init/start
-# ^ UNLESS We want a separate helper script for init/start
+# XXX Constantly peeking into game in is acceptable in THIS case since we're
+# ^ basically making a separate helper script for init/start
+# ^ Helps declutter the game namespace
 
 # initializations (for set up)
 new_game = game_mod.Game()

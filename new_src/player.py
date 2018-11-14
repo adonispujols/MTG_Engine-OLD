@@ -1,11 +1,12 @@
 from new_src import deck
 from new_src import hand
-# XXX avoid importing just for type checking (risks cyclic importing)
+# XXX Always forward reference types (wrap in string) to avoid import errors!
+# ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
 class Player:
-    deck: deck.Deck
-    hand: hand.Hand
+    deck: "deck.Deck"
+    hand: "hand.Hand"
 
     def __init__(self):
         # XXX hard setting attributes is not ideal. once finished:
