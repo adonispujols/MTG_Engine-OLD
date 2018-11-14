@@ -21,7 +21,7 @@ class Player:
         self._lands_limit = 1
 
     def draw(self):
-        self.hand.add(self.deck.remove_top())
+        self.hand.add(self.deck.pop())
 
     def make_active(self):
         self.active = True

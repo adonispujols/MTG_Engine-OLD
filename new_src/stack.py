@@ -1,4 +1,5 @@
 class Stack:
+# we PUSH to a stack
     # def __init__(self):
     #     self.
 

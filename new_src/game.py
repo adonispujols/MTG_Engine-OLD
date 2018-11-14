@@ -150,6 +150,7 @@ class Game:
     # ^ we'll refactor/apply proper OOP principles once we're done!
     def play(self, zone, index, is_active, met_land_limit):
         # with zone and index we can find the card
+        card = zone.
         # ELSE, IT, OR AT LEAST, CAST, WON'T KNOW WHAT TO DO
         if card.type() == "Land":
             # check if at sorcery speed (priority is implied since play can only be

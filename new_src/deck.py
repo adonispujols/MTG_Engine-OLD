@@ -14,5 +14,5 @@ class Deck:
     def shuffle(self):
         random.shuffle(self._deck)
 
-    def remove_top(self):
+    def pop(self):
         return self._deck.pop()
