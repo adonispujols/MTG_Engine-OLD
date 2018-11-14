@@ -60,7 +60,7 @@ class Game:
             card.untap()
 
     def give_player_priority(self, index):
-        if self._passes.count != len(self.players):
+        if int(self._passes) != len(self.players):
             def user_has_priority():
                 while True:
                     choice = input(self._player_prompt(index)).split()
