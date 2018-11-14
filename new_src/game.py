@@ -157,7 +157,7 @@ class Game:
         if card.type == "Land":
             # check if at sorcery speed (priority is implied since play can only be
             # ^ be called if had priority)
-            main = 
+            main =
             sorcery_speed = self._stack.is_empty() and is_active
             if sorcery_speed and under_land_limit:
                 # put on battlefield (typically from hand)

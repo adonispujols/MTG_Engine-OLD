@@ -5,7 +5,7 @@ class TurnParts(enum.Enum):
     UNTAP = 0
     UPKEEP = 1
     DRAW = 2
-    PRE_COMBAT = 3
+    PRE_COMBAT_MAIN = 3
     BEGIN_COMBAT = 4
     DECLARE_ATTACKERS = 5
     DECLARE_BLOCKERS = 6
