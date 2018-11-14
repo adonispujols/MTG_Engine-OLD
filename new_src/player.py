@@ -1,5 +1,6 @@
 from new_src import deck
 from new_src import hand
+# XXX avoid importing just for type checking (risks cyclic importing)
 
 
 class Player:

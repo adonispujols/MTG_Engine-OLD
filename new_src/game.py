@@ -1,9 +1,14 @@
 from new_src import passes
 from new_src import turn_parts
 from new_src import turn_actions
+import typing
+from new_src import player
 # XXX avoid importing just for type checking (risks cyclic importing)
 
+
 class Game:
+    players: typing.List[player.Player]
+
     def __init__(self):
         self._debug = False
         self._ai_only = False
