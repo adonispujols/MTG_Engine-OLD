@@ -3,7 +3,6 @@ from new_src import player as player_mod
 from new_src import deck
 from new_src import card as card_mod
 from new_src import hand
-from new_src import stack as stack_mod
 from new_src import game as game_mod
 from new_src import turn_actions
 # XXX Always forward reference types (wrap in string) to avoid import errors!
@@ -39,8 +38,6 @@ from new_src import turn_actions
 # ^ This is ALWAYS our main focus, with ports made to GUI when ready.
 # XXX need to handle times where you CAN play one of your opponents cards
 
-
-# methods/classes for setting up game
 # (before going through official "Starting the Game" steps [CR 103])
 # methods for officially "Starting the Game" [CR 103], in corresponding order
 def fill_decks(game):
