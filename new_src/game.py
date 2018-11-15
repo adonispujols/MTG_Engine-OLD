@@ -214,7 +214,7 @@ class Game:
             zone.remove(card_index)
             self.battlefield[player_index].append(card)
             # XXX Always increment afterwards (if you can) so it's only
-            # ^ done on success
+            # ^ done on success 
             lands_played.inc()
 
     def _activate(self, zone, card_index, mana_pool):
