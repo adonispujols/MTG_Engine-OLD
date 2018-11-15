@@ -101,7 +101,11 @@ def _end_step(game: "game_mod.Game"):
     game.step_or_phase = tp.TurnParts.END_STEP
     game.give_player_priority(game.active_index())
 
-
+# TODO CLEAR MANA POOLS ACCORDING TO RULES
+# TODO CLEAR MANA POOLS ACCORDING TO RULES
+# TODO CLEAR MANA POOLS ACCORDING TO RULES
+# TODO CLEAR MANA POOLS ACCORDING TO RULES
+# TODO CLEAR MANA POOLS ACCORDING TO RULES
 def _cleanup(game: "game_mod.Game"):
     print("Start: Cleanup")
     game.step_or_phase = tp.TurnParts.CLEANUP
@@ -114,5 +118,5 @@ _START_METHODS = (_untap, _upkeep, _draw, _pre_combat, _begin_combat,
 
 
 def start_next_step_or_phase(game, index):
-    # XXX this will fail if turn_parts' constants change (in type or meaning)
-    _START_METHODS[index.value + 1](game)
+    # XXX this might fail if turn_parts' constants change (in type or meaning)
+    _START_METHODS[index + 1](game)

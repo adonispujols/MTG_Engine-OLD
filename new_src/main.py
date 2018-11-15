@@ -9,7 +9,14 @@ from new_src import turn_actions
 # ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
-# TODO Comments are reserved for ONLY todos and warnings!
+# TODO WE NEED TO IMPLEMENT RULE BOOK COMPLETELY SO MARK EACH PART OF CODE THAT
+# FULFILLS/CORRESPONDS TO A CERTAIN RULE!! [CR <rule>]
+
+# TODO Comments are reserved for ONLY todos, warnings, or rule marking!
+
+# TODO Don't forget mana ability restriction in 605.3c:
+# "Once a player begins to activate a mana ability,
+# that ability can’t be activated again until it has resolved."
 
 # XXX
 # 	CREATE SCRIPT TO QUICKLY TAKE YOU TO A POINT IN GAME!
@@ -88,7 +95,7 @@ def initial_draw(game):
             player.draw()
 
 
-def choose_first_player(game: game_mod.Game):
+def choose_first_player(game: "game_mod.Game"):
     index = random.randrange(len(game.players))
     print("P" + str(index + 1) + ", who goes first?")
 

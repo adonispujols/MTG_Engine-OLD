@@ -1,6 +1,7 @@
 from new_src import deck
 from new_src import hand
 from new_src import lands_played as lp
+from new_src import mana_pool
 # XXX Always forward reference types (wrap in string) to avoid import errors!
 # ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
@@ -17,6 +18,7 @@ class Player:
         self.active = False
         self.lands_played = lp.LandsPlayed()
         self._land_limit = 1
+        self.mana_pool = mana_pool.ManaPool()
 
     def draw(self):
         self.hand.add(self.deck.pop())

@@ -6,11 +6,13 @@ from new_src import player as player_mod
 from new_src import stack
 from new_src import card as card_mod
 from new_src import print_utils as print_u
+from new_src import mana_types as mt
 # XXX Always forward reference types (wrap in string) to avoid import errors!
 # ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
 class Game:
+    step_or_phase: "tp.TurnParts"
     battlefield: typing.List[typing.List["card_mod.Card"]]
     players: typing.List["player_mod.Player"]
 
@@ -38,6 +40,7 @@ class Game:
         return is_active and self._in_main_phase() and self._stack.is_empty()
 
     def _met_land_restrictions(self, player):
+        # 115.2a Playing a land is a special action. To play a land, a player puts that land onto the battlefield from the zone it was in (usually that player’s hand). By default, a player can take this action only once during each of their turns. A player can take this action any time they have priority and the stack is empty during a main phase of their turn. See rule 305, “Lands.”
         return self._sorcery_speed(player.active) and player.under_land_limit()
 
     # TODO Refactor: don't pass index if you need the player (for api)
@@ -68,7 +71,7 @@ class Game:
             # TODO need to take into account actions taken in between passes!
             # MUST RESET PASSES (else we're stuck in infinite loop)
             self._passes.reset()
-            turn_actions.start_next_step_or_phase(self, self.step_or_phase)
+            turn_actions.start_next_step_or_phase(self, self.step_or_phase.value)
         else:
             def user_has_priority():
                 # TODO is it okay to just ignore superfluous/extra input?
@@ -112,7 +115,7 @@ class Game:
                     # TODO activate ability
                     # ^ what to name for pseudo activations, like morph and
                     # ^ other special actions?
-                    elif choice[0] == "activate":
+                    elif choice[0] == "act":
                         # TODO allow for activating from other zones
                         # player chooses a card from a zone (just battlefield for now)
                         try:
@@ -129,8 +132,9 @@ class Game:
                             # TODO sometimes you CAN activate stuff on another
                             # ! person's side of the field!
                             # Right now you can only activate from YOUR side!
-                            if 0 <= card_index < len(self.battlefield[index]):
-                                self._activate()
+                            p_field = self.battlefield[index]
+                            if 0 <= card_index < len(p_field):
+                                self._activate(p_field, card_index, self.players[index].mana_pool)
                             else:
                                 print("ERROR: Invalid card #")
                     elif choice[0] == "field":
@@ -189,7 +193,7 @@ class Game:
     # ^ Give play the minimum it should expect from input,
     # ^ and let PLAY sort out the rest!
     def _play(self, zone, card_index, p_index, p):
-        card = zone.get(card_index)
+        card: "card_mod.Card" = zone.get(card_index)
         if card.type == "Land":
             self._play_land(card, zone, card_index, p_index, p, p.lands_played)
         # elif card.type == "Creature"
@@ -205,5 +209,14 @@ class Game:
             # ^ done on success
             lands_played.inc()
 
-    def _activate(self):
-        pass
+    def _activate(self, zone, card_index, mana_pool):
+        # XXX this only works with primitive array zones unlike above,
+        # ^ which uses an actual object
+        card: "card_mod.Card" = zone[card_index]
+        if card.ability == "{T}: Add G":
+            # [CR 601.2e]: See if legal.
+            # At instant speed, so priority (or call/act. by effect) is implied.
+            #
+            if card.
+            # try to tap, if true, do the thing
+            mana_pool.add(mt.ManaTypes.G.value)
