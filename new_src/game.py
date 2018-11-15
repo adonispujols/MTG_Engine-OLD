@@ -70,8 +70,10 @@ class Game:
         if int(self._passes) == len(self.players):
             # TODO need to take into account actions taken in between passes!
             # MUST RESET PASSES (else we're stuck in infinite loop)
+            # TODO only move forward if stack is empty, otherwise resolve top.
             self._passes.reset()
-            turn_actions.start_next_step_or_phase(self, self.step_or_phase.value)
+            self.empty_mana_pools()
+            turn_actions.start_next_step_or_phase(self, self.step_or_phase)
         else:
             def user_has_priority():
                 # TODO is it okay to just ignore superfluous/extra input?
@@ -178,6 +180,10 @@ class Game:
                     user_has_priority()
                 else:
                     pass
+
+    def empty_mana_pools(self):
+        for player in self.players:
+            player.mana_pool.empty()
 
     # TODO Rafactor params to represent ALL info needed (even redundant object)
     # ^ I.e., even if you need both player.index AND player, those are TWO

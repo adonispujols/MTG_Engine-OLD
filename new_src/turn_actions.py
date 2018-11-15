@@ -14,6 +14,7 @@ def first_untap_of_game(game: "game_mod.Game", first_player):
     # XXX should game be doing this, or should we get the active player,
     # ^ then untap all their stuff (since it makes sense here)?
     game.untap_all_of_active()
+    game.empty_mana_pools()
     _upkeep(game)
 
 
@@ -27,6 +28,7 @@ def _untap(game: "game_mod.Game"):
     print("Active Player:", new_active + 1)
     game.untap_all_of_active()
     print("TBA: Active untaps all")
+    game.empty_mana_pools()
     _upkeep(game)
 
 
@@ -101,11 +103,7 @@ def _end_step(game: "game_mod.Game"):
     game.step_or_phase = tp.TurnParts.END_STEP
     game.give_player_priority(game.active_index())
 
-# TODO CLEAR MANA POOLS ACCORDING TO RULES
-# TODO CLEAR MANA POOLS ACCORDING TO RULES
-# TODO CLEAR MANA POOLS ACCORDING TO RULES
-# TODO CLEAR MANA POOLS ACCORDING TO RULES
-# TODO CLEAR MANA POOLS ACCORDING TO RULES
+
 def _cleanup(game: "game_mod.Game"):
     print("Start: Cleanup")
     game.step_or_phase = tp.TurnParts.CLEANUP
@@ -117,6 +115,6 @@ _START_METHODS = (_untap, _upkeep, _draw, _pre_combat, _begin_combat,
                   _combat_damage, _end_combat, _post_combat, _end_step, _cleanup)
 
 
-def start_next_step_or_phase(game, index):
+def start_next_step_or_phase(game, index: "tp.TurnParts"):
     # XXX this might fail if turn_parts' constants change (in type or meaning)
-    _START_METHODS[index + 1](game)
+    _START_METHODS[index.value + 1](game)
