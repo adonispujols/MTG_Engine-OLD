@@ -40,7 +40,7 @@ class Game:
         return is_active and self._in_main_phase() and self._stack.is_empty()
 
     def _met_land_restrictions(self, player):
-        # 115.2a Playing a land is a special action. To play a land, a player puts that land onto the battlefield from the zone it was in (usually that player’s hand). By default, a player can take this action only once during each of their turns. A player can take this action any time they have priority and the stack is empty during a main phase of their turn. See rule 305, “Lands.”
+        # [CR 115.2a].2
         return self._sorcery_speed(player.active) and player.under_land_limit()
 
     # TODO Refactor: don't pass index if you need the player (for api)
@@ -197,12 +197,20 @@ class Game:
         if card.type == "Land":
             self._play_land(card, zone, card_index, p_index, p, p.lands_played)
         # elif card.type == "Creature"
+    # [601.2g] TODO Mana abilities must be activated before costs are paid.
+    # ^ YOU ONLY HAVE A CHANCE TO ACTIVATE MANA ABILITIES SPECIFICALLY AT 601.2G!
+    # ^- THAT'S THE ONLY TIME! Once 601.2f comes, you must immediately pay.
+    # ^- Note, you're NOT forced to activate anything, but may or may not cause
+    # ^- an illegal state by not paying the mana (rewind cast OR just keep a
+    # ^- suspended or rebounded spell exiled)
 
     # XXX since met land restrictions requires player, play_land, TOO, requires
     # ^ it! Just passing it as an index so we can call players[index] is both
     # ^ deceptive, clunky, AND inefficient!
     def _play_land(self, card, zone, card_index, player_index, player, lands_played):
+        # [CR 115.2a].1
         if self._met_land_restrictions(player):
+            # [CR 115.2a].1
             zone.remove(card_index)
             self.battlefield[player_index].append(card)
             # XXX Always increment afterwards (if you can) so it's only
@@ -214,9 +222,13 @@ class Game:
         # ^ which uses an actual object
         card: "card_mod.Card" = zone[card_index]
         if card.ability == "{T}: Add G":
-            # [CR 601.2e]: See if legal.
-            # At instant speed, so priority (or call/act. by effect) is implied.
-            #
-            if card.
-            # try to tap, if true, do the thing
-            mana_pool.add(mt.ManaTypes.G.value)
+            # [CR 605.3] -> [CR 602.2b] -> TODO [CR 601.2b]
+            # [CR 601.2h] paying costs
+            if card.tap():
+                # [CR 601.2i] officially activated
+                # [CR 605.3a] resolve immediately after activation
+                mana_pool.add(mt.ManaTypes.G.value)
+                # TODO [CR 116.3c]
+                # Receive priority after cast, activation, or special action ONLY IF
+                # ^ YOU HAD PRIORITY BEFORE HAND!
+                # try to tap, if true, do the thing

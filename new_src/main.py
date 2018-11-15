@@ -11,12 +11,18 @@ from new_src import turn_actions
 
 # TODO WE NEED TO IMPLEMENT RULE BOOK COMPLETELY SO MARK EACH PART OF CODE THAT
 # FULFILLS/CORRESPONDS TO A CERTAIN RULE!! [CR <rule>]
+# *** Keep them as close as you can (as opposed to all scattered around)
+# If you need to split up in parts, do [CR <rule>].1, .2, etc
+# You may truncate as necessary, even just bare [CR <rule>].x, if appropriate.
+# ONLY WRITE DOWN RULES IF YOU'VE FINISHED THEM. OTHERWISE, DON'T OR PUT TODO_!
 
 # TODO Comments are reserved for ONLY todos, warnings, or rule marking!
 
 # TODO Don't forget mana ability restriction in 605.3c:
 # "Once a player begins to activate a mana ability,
 # that ability can’t be activated again until it has resolved."
+
+# TODO Note that rebound does NOT work if casted from opponent's hand (sen triplets)
 
 # XXX
 # 	CREATE SCRIPT TO QUICKLY TAKE YOU TO A POINT IN GAME!
