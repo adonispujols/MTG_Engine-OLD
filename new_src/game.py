@@ -33,15 +33,15 @@ class Game:
         return (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
                 or self.step_or_phase == tp.TurnParts.POSTCOMBAT_MAIN)
 
-    def _sorcery_speed(self, is_active):
-        return is_active and self._in_main_phase() and self._stack.empty()
+    def _sorcery_speed(self, active):
+        return active and self._in_main_phase() and self._stack.empty()
 
-    def _met_land_restrictions(self, player):
-        return self._sorcery_speed(player.active) and player.under_land_limit()
+    def _met_land_restrictions(self, active, under_land_limit):
+        return self._sorcery_speed(active) and under_land_limit
 
-    def _met_creature_restrictions(self, player):
+    def _met_creature_restrictions(self, active):
         # [CR 302.1].?
-        return self._sorcery_speed(player.active)
+        return self._sorcery_speed(active)
 
     # XXX Make index a player property? <- Need to track deaths, then
     # XXX make card index a property?
@@ -149,36 +149,42 @@ class Game:
 
     def _play(self, zone, card_index, p_index, p):
         card: "card_mod.Card" = zone.get(card_index)
+        active = p.active
         if card.card_type == "Land":
-            self._play_land(card, zone, card_index, p_index, p, p.lands_played)
+            self._play_land(card, zone, card_index, p_index, active, p.under_land_limit, p.lands_played)
         elif card.card_type == "Creature":
-            self._play_creature(card, zone, card_index, p)
+            self._play_creature(card, zone, card_index, active, p.mana_pool)
 
-    def _play_creature(self, card, zone, card_index, player):
+    def _play_creature(self, card, zone, card_index, active, mana_pool):
         zone.remove(card_index)
         self._stack.push(card)
         # [CR 601.2e]
-        if self._met_creature_restrictions(player):
+        if self._met_creature_restrictions(active):
             payed_costs = False
             # XXX make mana types more verbose "Green" and simpler?
             generic_cost = 1
-            type_cost = {mt.ManaTypes.G.name: 1}
+            specific_types = {mt.ManaTypes.G.name: 1}
             while not payed_costs:
                 mana_payed = input("Pay Mana: ")
-                # for key, value in inputdict.items():
-                #     # do something with value
-                #     inputdict[key] = newvalue
-                if (mana_payed in type_cost) and (type_cost[mana_payed] > 0):
-                    type_cost[mana_payed] -= 1
+                if mana_payed in mt.ManaTypes.__members__:
+                    if mana_pool.remove(mana_payed):
+                        if (mana_payed in specific_types) and (specific_types[mana_payed] > 0):
+                            specific_types[mana_payed] -= 1
+                        elif generic_cost > 0:
+                            generic_cost -= 1
+                        else:
+                            print("ERROR: Generic costs payed. Missing specific type.")
+                        if all(i == 0 for i in specific_types.values()) and (generic_cost == 0):
+                            break
+                    else:
+                        print("ERROR: You can't pay that mana.")
                 else:
-                    generic_cost -= 1
-                if all(i == 0 for i in type_cost) and (generic_cost == 0):
-                    break
-        # [CR 601.2i] successfully cast
+                    print("ERROR: Invalid input")
+            # [CR 601.2i] successfully cast
 
-    def _play_land(self, card, zone, card_index, player_index, player, lands_played):
+    def _play_land(self, card, zone, card_index, player_index, active, under_land_limit, lands_played):
         # [CR 115.2a].2
-        if self._met_land_restrictions(player):
+        if self._met_land_restrictions(active, under_land_limit):
             # [CR 115.2a].1
             zone.remove(card_index)
             self.battlefield[player_index].append(card)

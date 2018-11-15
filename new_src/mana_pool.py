@@ -8,3 +8,10 @@ class ManaPool:
     def empty(self):
         for i in self._pool:
             self._pool[i] = 0
+
+    def remove(self, mana):
+        index = mana.value
+        if self._pool[index] > 0:
+            self._pool[index] -= 1
+            return True
+        return False
