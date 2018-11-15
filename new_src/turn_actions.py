@@ -8,12 +8,14 @@ def first_untap_of_game(game: "game_mod.Game", first_player):
     game.step_or_phase = tp.TurnParts.UNTAP
     print("Start: First Untap step")
     game.players[first_player].make_active()
+    # make lands reset here
     print("Active Player:", first_player + 1)
     # TBA = "Turn-Based Action", SBA = "State-Based Action"
     print("TBA: Active untaps all")
     # XXX should game be doing this, or should we get the active player,
     # ^ then untap all their stuff (since it makes sense here)?
     game.untap_all_of_active()
+    # at the end of EACH step/phase, including untap!
     game.empty_mana_pools()
     _upkeep(game)
 

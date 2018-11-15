@@ -71,12 +71,20 @@ def init_game():
 
 
 def fill_decks(game):
-    for i in range(60):
+    # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    # TODO PUT BACK TO 60 CARDS IF YOU NEED IT!
+    # TODO Minimized to 20 for a speedup (although it seems unnecessary
+    # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    for i in range(10):
         # XXX each card must be a new, separate object,
         # else both decks will refer to same object!
-        game.players[0].deck.push(card_mod.Card("one " + str(i)))
-        game.players[1].deck.push(card_mod.Card("two " + str(i)))
-
+        game.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
+        game.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))
+    for i in range(10):
+        # XXX each card must be a new, separate object,
+        # else both decks will refer to same object!
+        game.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
+        game.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
 
 def init_battlefield(game):
     for _ in game.players:

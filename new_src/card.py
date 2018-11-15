@@ -1,8 +1,8 @@
 class Card:
-    def __init__(self, name):
+    def __init__(self, name, card_type):
         self._name = name
         self._tapped = False
-        self.type = "Land"
+        self.card_type = card_type
         self.ability = "{T}: Add G"
 
     def __repr__(self):

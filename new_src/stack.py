@@ -1,8 +1,9 @@
 class Stack:
-    # def __init__(self):
-    #     self.
+    def __init__(self):
+        self._stack = []
 
-    def is_empty(self):
-        return True
+    def empty(self):
+        return not self._stack
 
-    # we PUSH to a stack
+    def push(self, card):
+        self._stack.append(card)

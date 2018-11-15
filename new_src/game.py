@@ -37,11 +37,15 @@ class Game:
                 or self.step_or_phase == tp.TurnParts.POSTCOMBAT_MAIN)
 
     def _sorcery_speed(self, is_active):
-        return is_active and self._in_main_phase() and self._stack.is_empty()
+        return is_active and self._in_main_phase() and self._stack.empty()
 
     def _met_land_restrictions(self, player):
         # [CR 115.2a].2
         return self._sorcery_speed(player.active) and player.under_land_limit()
+
+    def _met_creature_restrictions(self, player):
+        # [CR 302.1].?
+        return self._sorcery_speed(player.active)
 
     # TODO Refactor: don't pass index if you need the player (for api)
     # ^ TODO BUT, you ONLY need an object to use its api
@@ -67,7 +71,7 @@ class Game:
             card.untap()
 
     def give_player_priority(self, index):
-        if int(self._passes) == len(self.players):
+        if (int(self._passes) == len(self.players)) and self._stack.empty():
             # TODO need to take into account actions taken in between passes!
             # MUST RESET PASSES (else we're stuck in infinite loop)
             # TODO only move forward if stack is empty, otherwise resolve top.
@@ -200,15 +204,47 @@ class Game:
     # ^ and let PLAY sort out the rest!
     def _play(self, zone, card_index, p_index, p):
         card: "card_mod.Card" = zone.get(card_index)
-        if card.type == "Land":
+        if card.card_type == "Land":
             self._play_land(card, zone, card_index, p_index, p, p.lands_played)
-        # elif card.type == "Creature"
-    # [601.2g] TODO Mana abilities must be activated before costs are paid.
-    # ^ YOU ONLY HAVE A CHANCE TO ACTIVATE MANA ABILITIES SPECIFICALLY AT 601.2G!
-    # ^- THAT'S THE ONLY TIME! Once 601.2f comes, you must immediately pay.
-    # ^- Note, you're NOT forced to activate anything, but may or may not cause
-    # ^- an illegal state by not paying the mana (rewind cast OR just keep a
-    # ^- suspended or rebounded spell exiled)
+        elif card.card_type == "Creature":
+            self._play_creature(card, zone, card_index, p)
+
+    def _play_creature(self, card, zone, card_index, player):
+        zone.remove(card_index)
+        self._stack.push(card)
+        # [CR 601.2e]
+        if self._met_creature_restrictions(player):
+            # pay costs, we'll add option to pay mana later
+            # we'll basically be stuck in infinite loop if you can't pay the costs
+            payed_costs = False
+            # XXX somehow, i feel like our constants are a little too verbose
+            # can we do anything similar to just mana == ManaTypes.G?
+            # ^ Or maybe change type from "G" to "Green" and so?
+            generic_cost = 1
+            type_cost = {mt.ManaTypes.G.name: 1}
+            while not payed_costs:
+                # XXX Pay mana one at a time (more flexible & easier to code)
+                mana_payed = input("Pay Mana: ")
+                # for key, value in inputdict.items():
+                #     # do something with value
+                #     inputdict[key] = newvalue
+                # XXX any speed/readability boost by deleting items as we pay them?
+                # XXX avoid try/except here since this is part of the NORMAL
+                # ^ LOGIC of our code! (missing keys are valid/don't indicate an
+                # ^ "error" of the sort. <- EAFP applies to legitimate errors.
+                if (mana_payed in type_cost) and (type_cost[mana_payed] > 0):
+                    type_cost[mana_payed] -= 1
+                else:
+                    generic_cost -= 1
+                # XXX maybe could be done more efficiently?
+                # ^ (look up itervalues for python3)
+                if all(i == 0 for i in type_cost) and (generic_cost == 0):
+                    # should return true here if in method
+                    break
+        # spell is officially cast (actually display it as public info)
+        # ^ until public info, its technically on stack, but hidden
+        # XXX SHOULD USE LOG FOR THIS (purely debug purpose)
+        print("CAST SUCCESSFUL")
 
     # XXX since met land restrictions requires player, play_land, TOO, requires
     # ^ it! Just passing it as an index so we can call players[index] is both
@@ -238,3 +274,9 @@ class Game:
                 # Receive priority after cast, activation, or special action ONLY IF
                 # ^ YOU HAD PRIORITY BEFORE HAND!
                 # try to tap, if true, do the thing
+    # [601.2g] TODO Mana abilities must be activated before costs are paid.
+    # ^ YOU ONLY HAVE A CHANCE TO ACTIVATE MANA ABILITIES SPECIFICALLY AT 601.2G!
+    # ^- THAT'S THE ONLY TIME! Once 601.2f comes, you must immediately pay.
+    # ^- Note, you're NOT forced to activate anything, but may or may not cause
+    # ^- an illegal state by not paying the mana (rewind cast OR just keep a
+    # ^- suspended or rebounded spell exiled)
