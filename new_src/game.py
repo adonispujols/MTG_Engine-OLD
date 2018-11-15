@@ -62,6 +62,13 @@ class Game:
             player.lands_played.reset()
 
     def give_player_priority(self, index):
+        # TODO WRONG WRONG WRONG!
+        # ONLY CHECKPASSES IF ACTUALLY PASSED PRIORITY
+        # TODO WRONG WRONG WRONG!
+        # ONLY CHECKPASSES IF ACTUALLY PASSED PRIORITY
+        # TODO WRONG WRONG WRONG!
+        # ONLY CHECKPASSES IF ACTUALLY PASSED PRIORITY
+        # MAKE A PASS PRIORITY FUNCTION SEPARATE FROM THIS!
         if (int(self._passes) == len(self.players)) and self._stack.empty():
             # TODO only move forward if stack is empty, otherwise resolve top.
             self._passes.reset()
@@ -191,7 +198,7 @@ class Game:
             lands_played.inc()
 
     def _activate(self, zone, card_index, mana_pool):
-        # TODO [CR 605.3c] mana ability must resolve completely before act.ing it again
+        # TODO [CR 605.3c] mana ability must resolve completely before activating it again
         card: "card_mod.Card" = zone[card_index]
         if card.ability == "{T}: Add G":
             # [CR 605.3] -> [CR 602.2b] -> TODO [CR 601.2b]

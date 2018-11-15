@@ -19,7 +19,6 @@ def init_game():
     fill_decks(new_game)
     new_game.battlefield = []
     init_battlefield(new_game)
-    start_game(new_game)
 
 
 def fill_decks(game):
@@ -86,6 +85,8 @@ def choose_first_player(game: "game_mod.Game"):
 
 
 init_game()
+# have your code like this, where init game doesn't stick around forever)
+start_game(new_game)
 
 # import abc
 #
