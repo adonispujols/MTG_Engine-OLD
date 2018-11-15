@@ -27,7 +27,6 @@ class Game:
         self.step_or_phase = None
 
     def _print_hand_and_decks(self):
-        # XXX Use ID when comparing objects (as you should)
         for i, player in enumerate(self.players):
             print("P" + str(i + 1), "HAND:\n", player.hand,
                   "\nP" + str(i + 1), "DECK:\n", player.deck)
@@ -103,13 +102,13 @@ class Game:
                         # TODO allow for playing from other zones
                         # player chooses a card from a zone (just hand for now)
                         try:
-                            # enter card # in hand (counting left to right)
-                            card_index = int(choice[1]) - 1
+                            card_index = int(choice[1])
                         except ValueError:
                             print("ERROR: Invalid integer")
                         except IndexError:
                             print("ERROR: Need 1 player # parameter, given 0")
                         else:
+                            card_index -= 1
                             # TODO VARIABLES FOR LIST[] DO SAVE COMPUTATION!
                             # ^- A list[i] takes more work than just reading var
                             # ^ So go ahead and have player = players[index]!
@@ -126,12 +125,13 @@ class Game:
                         # player chooses a card from a zone (just battlefield for now)
                         try:
                             # enter card # on field (counting left to right)
-                            card_index = int(choice[1]) - 1
+                            card_index = int(choice[1])
                         except ValueError:
                             print("ERROR: Invalid integer")
                         except IndexError:
                             print("ERROR: Need 1 player # parameter, given 0")
                         else:
+                            card_index -= 1
                             # TODO VARIABLES FOR LIST[] DO SAVE COMPUTATION!
                             # ^- A list[i] takes more work than just reading var
                             # ^ So go ahead and have player = players[index]!
@@ -139,6 +139,8 @@ class Game:
                             # ! person's side of the field!
                             # Right now you can only activate from YOUR side!
                             p_field = self.battlefield[index]
+                            # can't find a way to wrap this in try block
+                            # ^ WITHOUT having side effects during the try.
                             if 0 <= card_index < len(p_field):
                                 self._activate(p_field, card_index, self.players[index].mana_pool)
                             else:
