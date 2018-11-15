@@ -5,61 +5,13 @@ from new_src import card as card_mod
 from new_src import hand
 from new_src import game as game_mod
 from new_src import turn_actions
-# XXX Always forward reference types (wrap in string) to avoid import errors!
-# ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
-
-
-# TODO WE NEED TO IMPLEMENT RULE BOOK COMPLETELY SO MARK EACH PART OF CODE THAT
-# FULFILLS/CORRESPONDS TO A CERTAIN RULE!! [CR <rule>]
-# *** Keep them as close as you can (as opposed to all scattered around)
-# If you need to split up in parts, do [CR <rule>].1, .2, etc
-# You may truncate as necessary, even just bare [CR <rule>].x, if appropriate.
-# ONLY WRITE DOWN RULES IF YOU'VE FINISHED THEM. OTHERWISE, DON'T OR PUT TODO_!
-
-# TODO Comments are reserved for ONLY todos, warnings, or rule marking!
-
-# TODO Don't forget mana ability restriction in 605.3c:
-# "Once a player begins to activate a mana ability,
-# that ability can’t be activated again until it has resolved."
-
-# TODO Note that rebound does NOT work if casted from opponent's hand (sen triplets)
-
-# XXX
-# 	CREATE SCRIPT TO QUICKLY TAKE YOU TO A POINT IN GAME!
-# AUTOMATE CHANGING PLYER WITHOUT THE OLD HACK OF EDITING/COMMENTING CODE
-# (won’t work on large codebases/lots of time + effort on stuff that will
-# just be deleted afterwards)#
-#   Rollout testing suite confirming (on each run) that everything is
-# (and still is) okay!!!!!!!!
-# XXX
-
-# XXX Don't forget about Planechase! Super fun!
-# XXX Use "_" for basic loops/not using item (not for i in range(len(iter)))
-# XXX Avoid unnecessary concatenation. Use ',' not '+ " "' for spaces! (without '')
-# XXX NEVER "SAFE" DELETE: It makes you *think* you don't need it, but you might of!
-# XXX Assume private fields/methods, then make public if needed by OTHER objects
-# ^ "Private" = strictly internal. I.e., NEVER USED outside the class or module/file
-# ^ THIS INCLUDES INIT! Outside access means it still isn't *STRICTLY internal*!
-# XXX Never use straight getters/setters <- use properties!
-# XXX Last design failed because you thought too much about "what" and not "how"
-# ^ Don't guess ahead of time what's needed! Find out by trying to do it!
-# XXX Keep code compatible code with multiplayer & ai vs ai!
-# XXX Always let code fail gracefully on invalid input (if reversible)!
-# XXX Stay Pythonic! Throw exceptions on actual errors, rather than check ahead!
-# XXX Try generalizing ai behavior to a script or so?
-# XXX Maintain a complete, solid CLI to depend on during GUI dev.
-# ^ This is ALWAYS our main focus, with ports made to GUI when ready.
-# XXX need to handle times where you CAN play one of your opponents cards
-
-# XXX Constantly peeking into game in init/start script is acceptable since
-# ^ it's basically just a helper script to help declutter the game namespace
 
 def init_game():
     new_game = game_mod.Game()
     new_game.debug = True
     new_game.ai_only = False
     new_game.players = [player_mod.Player(), player_mod.Player()]
-    # XXX hard setting attributes is not ideal. ( we'll refactor once done)
+    # XXX avoid hard setting attributes?
     new_game.players[0].deck = deck.Deck()
     new_game.players[0].hand = hand.Hand()
     new_game.players[1].deck = deck.Deck()
@@ -71,20 +23,14 @@ def init_game():
 
 
 def fill_decks(game):
-    # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    # TODO PUT BACK TO 60 CARDS IF YOU NEED IT!
-    # TODO Minimized to 20 for a speedup (although it seems unnecessary
-    # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     for i in range(10):
-        # XXX each card must be a new, separate object,
-        # else both decks will refer to same object!
+        # XXX each should be it's own new object
         game.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
         game.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))
     for i in range(10):
-        # XXX each card must be a new, separate object,
-        # else both decks will refer to same object!
         game.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
         game.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
+
 
 def init_battlefield(game):
     for _ in game.players:
@@ -113,14 +59,14 @@ def choose_first_player(game: "game_mod.Game"):
     index = random.randrange(len(game.players))
     print("P" + str(index + 1) + ", who goes first?")
 
-    # XXX ALWAYS define funcs locally they'll ONLY be used in that context!
     def user_chooses_first_player():
         while True:
             try:
-                choice = int(input("Player #: ")) - 1
+                choice = int(input("Player #: "))
             except ValueError:
                 print("ERROR: Invalid int")
             else:
+                choice -= 1
                 if 0 <= choice < len(game.players):
                     return choice
                 else:

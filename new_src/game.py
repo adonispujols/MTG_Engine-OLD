@@ -7,8 +7,6 @@ from new_src import stack
 from new_src import card as card_mod
 from new_src import print_utils as print_u
 from new_src import mana_types as mt
-# XXX Always forward reference types (wrap in string) to avoid import errors!
-# ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
 class Game:
@@ -23,7 +21,7 @@ class Game:
         self.battlefield = None
         self._stack = stack.Stack()
         self._passes = passes.Passes()
-        # Initially none since game isn't at untap yet (officially)
+        # initially none until 1st turn
         self.step_or_phase = None
 
     def _print_hand_and_decks(self):
@@ -39,25 +37,15 @@ class Game:
         return is_active and self._in_main_phase() and self._stack.empty()
 
     def _met_land_restrictions(self, player):
-        # [CR 115.2a].2
         return self._sorcery_speed(player.active) and player.under_land_limit()
 
     def _met_creature_restrictions(self, player):
         # [CR 302.1].?
         return self._sorcery_speed(player.active)
 
-    # TODO Refactor: don't pass index if you need the player (for api)
-    # ^ TODO BUT, you ONLY need an object to use its api
-    # ^ YOU NEVER (except in rare cases, like init) modify a field directly!
-    # ^ YOU MAY "get" a field, but as a PARAM. You may NOT do object.foo ... etc
-    # TODO Make index a player property? <- Need to track deaths, then
-    # ^ likely yes (much simpler, esp since it's static)
-    # ^ for deaths: either del player & update all indices,
-    # ^ or make empty & skip over, or...
-    # TODO confirm if CARD index (in zone) should be a property, too!
-    # ^ most likely not
+    # XXX Make index a player property? <- Need to track deaths, then
+    # XXX make card index a property?
     def active_index(self):
-        # XXX could definitely optimize this AND SIMILAR (however, clarity is key atm)
         for i, player in enumerate(self.players):
             if player.active:
                 return i
@@ -69,38 +57,30 @@ class Game:
         for card in self.battlefield[self.active_index()]:
             card.untap()
 
+    def reset_lands_played(self):
+        for player in self.players:
+            player.lands_played.reset()
+
     def give_player_priority(self, index):
         if (int(self._passes) == len(self.players)) and self._stack.empty():
-            # TODO need to take into account actions taken in between passes!
-            # MUST RESET PASSES (else we're stuck in infinite loop)
             # TODO only move forward if stack is empty, otherwise resolve top.
             self._passes.reset()
             self.empty_mana_pools()
             turn_actions.start_next_step_or_phase(self, self.step_or_phase)
         else:
             def user_has_priority():
-                # TODO is it okay to just ignore superfluous/extra input?
-                # ^ i.e., hand 2 asdfasdfasdf will just have asdf... ignored
-                # ^ is this okay behavior?
                 while True:
                     choice = input(print_u.player_prompt(index, self.players[index])).split()
-                    # TODO here is where we add more choices for player
-                    # ^ either actions requiring priority (play, activate, pass, etc)
-                    # ^ OR ability to look at game state
-                    # ^^ XXX could organize ALL input asks such that:
-                    # ^^ user may always look at the board state before a choice
+                    # TODO Include more general options for player (regardless of priority)
+                    # ^ such as simply looking at board state
                     if not choice:
                         self._passes.inc()
                         self.give_player_priority((index + 1) % len(self.players))
                         break
-                    # TODO implement user-limited commands (no debug)
-                    # ^ normally, user's knowledge of game is limited
-                    # ^ he can't just randomly search through hands, decks, etc
-                    # ^ EX: "hand-self" prints own hand of player
+                    # TODO implement user-limited commands
                     # TODO play(card)
                     elif choice[0] == "play":
                         # TODO allow for playing from other zones
-                        # player chooses a card from a zone (just hand for now)
                         try:
                             card_index = int(choice[1])
                         except ValueError:
@@ -109,22 +89,15 @@ class Game:
                             print("ERROR: Need 1 player # parameter, given 0")
                         else:
                             card_index -= 1
-                            # TODO VARIABLES FOR LIST[] DO SAVE COMPUTATION!
-                            # ^- A list[i] takes more work than just reading var
-                            # ^ So go ahead and have player = players[index]!
                             p = self.players[index]
                             if 0 <= card_index < p.hand.size():
                                 self._play(p.hand, card_index, index, p)
                             else:
                                 print("ERROR: Invalid card #")
                     # TODO activate ability
-                    # ^ what to name for pseudo activations, like morph and
-                    # ^ other special actions?
                     elif choice[0] == "act":
                         # TODO allow for activating from other zones
-                        # player chooses a card from a zone (just battlefield for now)
                         try:
-                            # enter card # on field (counting left to right)
                             card_index = int(choice[1])
                         except ValueError:
                             print("ERROR: Invalid integer")
@@ -132,15 +105,8 @@ class Game:
                             print("ERROR: Need 1 player # parameter, given 0")
                         else:
                             card_index -= 1
-                            # TODO VARIABLES FOR LIST[] DO SAVE COMPUTATION!
-                            # ^- A list[i] takes more work than just reading var
-                            # ^ So go ahead and have player = players[index]!
-                            # TODO sometimes you CAN activate stuff on another
-                            # ! person's side of the field!
-                            # Right now you can only activate from YOUR side!
+                            # TODO activation from other zones support
                             p_field = self.battlefield[index]
-                            # can't find a way to wrap this in try block
-                            # ^ WITHOUT having side effects during the try.
                             if 0 <= card_index < len(p_field):
                                 self._activate(p_field, card_index, self.players[index].mana_pool)
                             else:
@@ -148,10 +114,7 @@ class Game:
                     elif choice[0] == "field":
                         print_u.print_field(self.battlefield)
                     elif self.debug:
-                        # XXX Our code ignores extra input after what is understood
-                        # ^ I.e., "hand 0 asdf" is translated as "hand 0"
                         if choice[0] == "hand":
-                            # XXX make a general "valid player index" method?
                             try:
                                 p_index = int(choice[1]) - 1
                             except ValueError:
@@ -159,17 +122,10 @@ class Game:
                             except IndexError:
                                 print("ERROR: Need 1 player # parameter, given 0")
                             else:
-                                # XXX Apply EAFP ONLY when validating input, NOT LOGIC!
-                                # ^ I.e., checking for int/params is FINE! BUT we
-                                # ^ can't allow for irreversible game states by allowing
-                                # ^ invalid actions to run until error is caught!!!
-                                # - Essentially: Preemptively stop illegal game states
-                                # - from existing!
                                 if 0 <= p_index < len(self.players):
                                     print_u.print_hand(p_index, self.players[p_index])
                                 else:
                                     print("ERROR: Invalid player #")
-                        # could we combine this error message w/ final else?
                         else:
                             print("ERROR: Invalid input")
                     else:
@@ -191,19 +147,6 @@ class Game:
         for player in self.players:
             player.mana_pool.empty()
 
-    # TODO Rafactor params to represent ALL info needed (even redundant object)
-    # ^ I.e., even if you need both player.index AND player, those are TWO
-    # ^ SEPARATE params (that we may later then refactor to remove player from)
-    # XXX Only pass the EXACT object you need! Not an object containing it!
-    # ^ i.e, what's the closest possible object you need to do your work?
-    # ^ e.g., if you need a hand, just get the hand, NOT player (for player.hand)
-    # XXX WARNING: You can ONLY edit stuff by accessing it's wrapper!
-    # ^ Thus, any operation on "class.foo" has to be done via class.foo = ...
-    # ^ NOT passed as a param! Direct param loses class context, so can't edit
-    # XXX IT IS *PLAY'S* JOB TO PARSE THE INFO NEEDED FROM PLAYER
-    # ^ *NOT* THE THING SIMPLY CALLING IT FROM INPUT
-    # ^ Give play the minimum it should expect from input,
-    # ^ and let PLAY sort out the rest!
     def _play(self, zone, card_index, p_index, p):
         card: "card_mod.Card" = zone.get(card_index)
         if card.card_type == "Land":
@@ -216,69 +159,40 @@ class Game:
         self._stack.push(card)
         # [CR 601.2e]
         if self._met_creature_restrictions(player):
-            # pay costs, we'll add option to pay mana later
-            # we'll basically be stuck in infinite loop if you can't pay the costs
             payed_costs = False
-            # XXX somehow, i feel like our constants are a little too verbose
-            # can we do anything similar to just mana == ManaTypes.G?
-            # ^ Or maybe change type from "G" to "Green" and so?
+            # XXX make mana types more verbose "Green" and simpler?
             generic_cost = 1
             type_cost = {mt.ManaTypes.G.name: 1}
             while not payed_costs:
-                # XXX Pay mana one at a time (more flexible & easier to code)
                 mana_payed = input("Pay Mana: ")
                 # for key, value in inputdict.items():
                 #     # do something with value
                 #     inputdict[key] = newvalue
-                # XXX any speed/readability boost by deleting items as we pay them?
-                # XXX avoid try/except here since this is part of the NORMAL
-                # ^ LOGIC of our code! (missing keys are valid/don't indicate an
-                # ^ "error" of the sort. <- EAFP applies to legitimate errors.
                 if (mana_payed in type_cost) and (type_cost[mana_payed] > 0):
                     type_cost[mana_payed] -= 1
                 else:
                     generic_cost -= 1
-                # XXX maybe could be done more efficiently?
-                # ^ (look up itervalues for python3)
                 if all(i == 0 for i in type_cost) and (generic_cost == 0):
-                    # should return true here if in method
                     break
-        # spell is officially cast (actually display it as public info)
-        # ^ until public info, its technically on stack, but hidden
-        # XXX SHOULD USE LOG FOR THIS (purely debug purpose)
-        print("CAST SUCCESSFUL")
+        # [CR 601.2i] successfully cast
 
-    # XXX since met land restrictions requires player, play_land, TOO, requires
-    # ^ it! Just passing it as an index so we can call players[index] is both
-    # ^ deceptive, clunky, AND inefficient!
     def _play_land(self, card, zone, card_index, player_index, player, lands_played):
-        # [CR 115.2a].1
+        # [CR 115.2a].2
         if self._met_land_restrictions(player):
             # [CR 115.2a].1
             zone.remove(card_index)
             self.battlefield[player_index].append(card)
-            # XXX Always increment afterwards (if you can) so it's only
-            # ^ done on success
             lands_played.inc()
 
     def _activate(self, zone, card_index, mana_pool):
-        # XXX this only works with primitive array zones unlike above,
-        # ^ which uses an actual object
+        # TODO [CR 605.3c] mana ability must resolve completely before act.ing it again
         card: "card_mod.Card" = zone[card_index]
         if card.ability == "{T}: Add G":
             # [CR 605.3] -> [CR 602.2b] -> TODO [CR 601.2b]
+            # TODO [601.2g] only part where mana abilities may be activated
             # [CR 601.2h] paying costs
             if card.tap():
                 # [CR 601.2i] officially activated
                 # [CR 605.3a] resolve immediately after activation
                 mana_pool.add(mt.ManaTypes.G.value)
-                # TODO [CR 116.3c]
-                # Receive priority after cast, activation, or special action ONLY IF
-                # ^ YOU HAD PRIORITY BEFORE HAND!
-                # try to tap, if true, do the thing
-    # [601.2g] TODO Mana abilities must be activated before costs are paid.
-    # ^ YOU ONLY HAVE A CHANCE TO ACTIVATE MANA ABILITIES SPECIFICALLY AT 601.2G!
-    # ^- THAT'S THE ONLY TIME! Once 601.2f comes, you must immediately pay.
-    # ^- Note, you're NOT forced to activate anything, but may or may not cause
-    # ^- an illegal state by not paying the mana (rewind cast OR just keep a
-    # ^- suspended or rebounded spell exiled)
+                # TODO [CR 116.3c] ONLY receive priority after cast/act/action IF had it before

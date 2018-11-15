@@ -3,7 +3,6 @@ class ManaPool:
         self._pool = [0, 0, 0, 0, 0, 0]
 
     def add(self, m_type):
-        # XXX this might fail if mana_types' values change (in type or meaning)
         self._pool[m_type] += 1
 
     def empty(self):

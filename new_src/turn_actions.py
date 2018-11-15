@@ -1,21 +1,16 @@
 from new_src import game as game_mod
 from new_src import turn_parts as tp
-# XXX Always forward reference types (wrap in string) to avoid import errors!
-# ^ STILL NEED TO IMPORT FOR THIS TO WORK <- key misunderstanding
 
 
 def first_untap_of_game(game: "game_mod.Game", first_player):
     game.step_or_phase = tp.TurnParts.UNTAP
     print("Start: First Untap step")
     game.players[first_player].make_active()
-    # make lands reset here
     print("Active Player:", first_player + 1)
+    game.reset_lands_played()
     # TBA = "Turn-Based Action", SBA = "State-Based Action"
     print("TBA: Active untaps all")
-    # XXX should game be doing this, or should we get the active player,
-    # ^ then untap all their stuff (since it makes sense here)?
     game.untap_all_of_active()
-    # at the end of EACH step/phase, including untap!
     game.empty_mana_pools()
     _upkeep(game)
 
@@ -28,6 +23,7 @@ def _untap(game: "game_mod.Game"):
     new_active = (prev_active + 1) % len(game.players)
     game.players[new_active].make_active()
     print("Active Player:", new_active + 1)
+    game.reset_lands_played()
     game.untap_all_of_active()
     print("TBA: Active untaps all")
     game.empty_mana_pools()
@@ -41,7 +37,7 @@ def _upkeep(game: "game_mod.Game"):
 
 
 def _draw(game: "game_mod.Game"):
-    # TODO must skip if 1st player's 1st draw (if 1v1 or 2-headed giant)
+    # TODO skip the very 1st draw step
     print("Start: Draw")
     game.step_or_phase = tp.TurnParts.DRAW
     print("TBA: Active draws")
@@ -76,8 +72,7 @@ def _declare_blockers(game: "game_mod.Game"):
 
 def _first_strike_damage(game: "game_mod.Game"):
     print("Start: First Strike Damage")
-    # TODO need to skip to combat damage if no creatures wih first strike
-    # ^ on either side of the field
+    # TODO skip to combat damage if no creatures wih first strike
     game.step_or_phase = tp.TurnParts.FIRST_STRIKE_DAMAGE
     game.give_player_priority(game.active_index())
 
@@ -118,5 +113,4 @@ _START_METHODS = (_untap, _upkeep, _draw, _pre_combat, _begin_combat,
 
 
 def start_next_step_or_phase(game, index: "tp.TurnParts"):
-    # XXX this might fail if turn_parts' constants change (in type or meaning)
     _START_METHODS[index.value + 1](game)
