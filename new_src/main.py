@@ -11,7 +11,6 @@ def init_game(game):
     game.debug = True
     game.ai_only = False
     game.players = [player_mod.Player(), player_mod.Player()]
-    # XXX avoid hard setting attributes?
     game.players[0].deck = deck.Deck()
     game.players[0].hand = hand.Hand()
     game.players[1].deck = deck.Deck()
@@ -23,7 +22,6 @@ def init_game(game):
 
 def fill_decks(game):
     for i in range(10):
-        # XXX each should be it's own new object
         game.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
         game.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))
     for i in range(10):
@@ -38,7 +36,6 @@ def init_battlefield(game):
 
 def start_game(game):
     shuffle_all(game)
-    # XXX in a match, loser of last game chooses
     initial_draw(game)
     turn_actions.first_untap_of_game(game, choose_first_player(game))
 
@@ -86,7 +83,6 @@ def choose_first_player(game: "game_mod.Game"):
 
 new_game = game_mod.Game()
 init_game(new_game)
-# have your code like this, where init game doesn't stick around forever)
 start_game(new_game)
 
 # import abc

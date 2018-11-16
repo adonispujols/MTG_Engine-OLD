@@ -43,8 +43,6 @@ class Game:
         # [CR 302.1].?
         return self._sorcery_speed(active)
 
-    # XXX Make index a player property? <- Need to track deaths, then
-    # XXX make card index a property?
     def active_index(self):
         for i, player in enumerate(self.players):
             if player.active:
@@ -72,7 +70,6 @@ class Game:
                 self.empty_mana_pools()
                 turn_actions.start_next_step_or_phase(self, self.step_or_phase)
             self._passes.reset()
-        # XXX keep an else? should above call terminate it all/return?
         else:
             self.give_player_priority((index + 1) % len(self.players))
 
@@ -84,12 +81,10 @@ class Game:
                 # ^ such as simply looking at board state
                 if not choice:
                     self._pass_priority(index)
-                    # XXX this break is meaningless
                     break
                 # TODO implement user-limited commands
-                # TODO play(card)
                 elif choice[0] == "play":
-                    # TODO allow for playing from other zones
+                    # TODO support playing from other zones
                     try:
                         card_index = int(choice[1])
                     except ValueError:
@@ -103,9 +98,8 @@ class Game:
                             self._play(p.hand, card_index, index, p)
                         else:
                             print("ERROR: Invalid card #")
-                # TODO activate ability
                 elif choice[0] == "act":
-                    # TODO allow for activating from other zones
+                    # TODO support for activating from other zones
                     try:
                         card_index = int(choice[1])
                     except ValueError:
@@ -114,7 +108,6 @@ class Game:
                         print("ERROR: Need 1 player # parameter, given 0")
                     else:
                         card_index -= 1
-                        # TODO activation from other zones support
                         p_field = self.battlefield[index]
                         if 0 <= card_index < len(p_field):
                             self._activate(p_field, card_index, self.players[index].mana_pool)
@@ -167,14 +160,15 @@ class Game:
 
     def _cast_creature(self, card, zone, card_index, active, mana_pool):
         # TODO [CR 601.3a] to [CR 601.3b] (exceptions to casting restrictions)
-        # ^ We check legality DURING cast [CR 601.2e], not BEFORE (it seems).
         # [CR 601.2e]
         if self._met_creature_restrictions(active):
+            # [CR 601.2a]
             zone.remove(card_index)
             self._stack.push(card)
-            # XXX make mana types more verbose "Green" and simpler?
+            # TODO [601.2g] only part where mana abilities may be activated during cast/act
+            # [CR 601.2h] paying total cost
             generic_cost = 1
-            specific_types = {mt.ManaTypes.G.name: 1}
+            specific_types = {mt.ManaTypes.G: 1}
             while True:
                 mana_payed = input("Pay Mana: ")
                 try:
@@ -188,7 +182,9 @@ class Game:
                         elif generic_cost > 0:
                             generic_cost -= 1
                         else:
-                            print("ERROR: Generic costs payed. Missing specific type.")
+                            # TODO use LBYL and/or try "reversing" illegal actions
+                            raise ValueError("ILLEGAL ACTION: Mana removed for improper type (generic costs payed).")
+                            # print("ERROR: Generic costs payed. Missing specific type.")
                         if all(i == 0 for i in specific_types.values()) and (generic_cost == 0):
                             break
                     else:
@@ -208,10 +204,9 @@ class Game:
         card: "card_mod.Card" = zone[card_index]
         if card.ability == "{T}: Add G":
             # [CR 605.3] -> [CR 602.2b] -> TODO [CR 601.2b]
-            # TODO [601.2g] only part where mana abilities may be activated
             # [CR 601.2h] paying costs
             if card.tap():
-                # [CR 601.2i] officially activated
+                # [CR 601.2i] successfully activated
                 # [CR 605.3a] resolve immediately after activation
                 mana_pool.add(mt.ManaTypes.G.value)
                 # TODO [CR 116.3c] ONLY receive priority after cast/act/action IF had it before
