@@ -34,10 +34,16 @@ def init_battlefield(game):
         game.battlefield.append([])
 
 
+# According to [CR 103]
 def start_game(game):
+    # [CR 103.1]
     shuffle_all(game)
+    # [CR 103.2]
+    first_player = choose_first_player(game)
+    # [CR 103.4]
     initial_draw(game)
-    turn_actions.first_untap_of_game(game, choose_first_player(game))
+    # [CR 103.7]
+    turn_actions.first_untap_of_game(game, first_player)
 
 
 def shuffle_all(game):
