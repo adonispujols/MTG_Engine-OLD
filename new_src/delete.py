@@ -9,7 +9,7 @@ class EnumTest(enum.Enum):
 
 x = "A"
 try:
-    choice = EnumTest[x]
+    choice = EnumTest["random"]
 except KeyError:
     print("key not found")
 else:

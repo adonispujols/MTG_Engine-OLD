@@ -131,6 +131,7 @@ class Game:
                         except IndexError:
                             print("ERROR: Need 1 player # parameter, given 0")
                         else:
+                            p_index -= 1
                             if 0 <= p_index < len(self.players):
                                 print_u.print_hand(p_index, self.players[p_index])
                             else:
@@ -175,10 +176,12 @@ class Game:
             generic_cost = 1
             specific_types = {mt.ManaTypes.G.name: 1}
             while True:
-                raw_input = input("Pay Mana: ")
+                mana_payed = input("Pay Mana: ")
                 try:
-                    mt.ManaTypes[mana_payed]
-                if mana_payed in mt.ManaTypes.__members__:
+                    mana_payed = mt.ManaTypes[mana_payed]
+                except KeyError:
+                    print("ERROR: Invalid input")
+                else:
                     if mana_pool.remove(mana_payed):
                         if (mana_payed in specific_types) and (specific_types[mana_payed] > 0):
                             specific_types[mana_payed] -= 1
@@ -190,8 +193,6 @@ class Game:
                             break
                     else:
                         print("ERROR: You can't pay that mana.")
-                else:
-                    print("ERROR: Invalid input")
             # [CR 601.2i] successfully cast
 
     def _play_land(self, card, zone, card_index, player_index, active, under_land_limit, lands_played):
