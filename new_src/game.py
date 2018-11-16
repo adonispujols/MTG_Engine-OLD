@@ -189,7 +189,7 @@ class Game:
                             break
                     else:
                         print("ERROR: You can't pay that mana.")
-            # [CR 601.2i] successfully cast
+            # [CR 601.2i] successfully cast 
 
     def _play_land(self, card, zone, card_index, player_index, active, under_land_limit, lands_played):
         # [CR 115.2a].2
