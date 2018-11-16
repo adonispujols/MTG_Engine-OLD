@@ -61,94 +61,96 @@ class Game:
         for player in self.players:
             player.lands_played.reset()
 
-    def give_player_priority(self, index):
-        # TODO WRONG WRONG WRONG!
-        # ONLY CHECKPASSES IF ACTUALLY PASSED PRIORITY
-        # TODO WRONG WRONG WRONG!
-        # ONLY CHECKPASSES IF ACTUALLY PASSED PRIORITY
-        # TODO WRONG WRONG WRONG!
-        # ONLY CHECKPASSES IF ACTUALLY PASSED PRIORITY
-        # MAKE A PASS PRIORITY FUNCTION SEPARATE FROM THIS!
-        if (int(self._passes) == len(self.players)) and self._stack.empty():
-            # TODO only move forward if stack is empty, otherwise resolve top.
+    # TODO Obviously horrible, doesn't end, and needs a touch up:
+    def _pass_priority(self, index):
+        self._passes.inc()
+        next_player = self.players[(index + 1) % len(self.players)]
+        # TODO take into account actions + stack being empty.
+        if next_player.active:
+            if int(self._passes) == len(self.players):
+                self._passes.reset()
+                self.empty_mana_pools()
+                turn_actions.start_next_step_or_phase(self, self.step_or_phase)
             self._passes.reset()
-            self.empty_mana_pools()
-            turn_actions.start_next_step_or_phase(self, self.step_or_phase)
+        # XXX keep an else? should above call terminate it all/return?
         else:
-            def user_has_priority():
-                while True:
-                    choice = input(print_u.player_prompt(index, self.players[index])).split()
-                    # TODO Include more general options for player (regardless of priority)
-                    # ^ such as simply looking at board state
-                    if not choice:
-                        self._passes.inc()
-                        self.give_player_priority((index + 1) % len(self.players))
-                        break
-                    # TODO implement user-limited commands
-                    # TODO play(card)
-                    elif choice[0] == "play":
-                        # TODO allow for playing from other zones
+            self.give_player_priority((index + 1) % len(self.players))
+
+    def give_player_priority(self, index):
+        def user_has_priority():
+            while True:
+                choice = input(print_u.player_prompt(index, self.players[index])).split()
+                # TODO Include more general options for player (regardless of priority)
+                # ^ such as simply looking at board state
+                if not choice:
+                    self._pass_priority(index)
+                    # XXX this break is meaningless
+                    break
+                # TODO implement user-limited commands
+                # TODO play(card)
+                elif choice[0] == "play":
+                    # TODO allow for playing from other zones
+                    try:
+                        card_index = int(choice[1])
+                    except ValueError:
+                        print("ERROR: Invalid integer")
+                    except IndexError:
+                        print("ERROR: Need 1 player # parameter, given 0")
+                    else:
+                        card_index -= 1
+                        p = self.players[index]
+                        if 0 <= card_index < p.hand.size():
+                            self._play(p.hand, card_index, index, p)
+                        else:
+                            print("ERROR: Invalid card #")
+                # TODO activate ability
+                elif choice[0] == "act":
+                    # TODO allow for activating from other zones
+                    try:
+                        card_index = int(choice[1])
+                    except ValueError:
+                        print("ERROR: Invalid integer")
+                    except IndexError:
+                        print("ERROR: Need 1 player # parameter, given 0")
+                    else:
+                        card_index -= 1
+                        # TODO activation from other zones support
+                        p_field = self.battlefield[index]
+                        if 0 <= card_index < len(p_field):
+                            self._activate(p_field, card_index, self.players[index].mana_pool)
+                        else:
+                            print("ERROR: Invalid card #")
+                elif choice[0] == "field":
+                    print_u.print_field(self.battlefield)
+                elif self.debug:
+                    if choice[0] == "hand":
                         try:
-                            card_index = int(choice[1])
+                            p_index = int(choice[1])
                         except ValueError:
                             print("ERROR: Invalid integer")
                         except IndexError:
                             print("ERROR: Need 1 player # parameter, given 0")
                         else:
-                            card_index -= 1
-                            p = self.players[index]
-                            if 0 <= card_index < p.hand.size():
-                                self._play(p.hand, card_index, index, p)
+                            if 0 <= p_index < len(self.players):
+                                print_u.print_hand(p_index, self.players[p_index])
                             else:
-                                print("ERROR: Invalid card #")
-                    # TODO activate ability
-                    elif choice[0] == "act":
-                        # TODO allow for activating from other zones
-                        try:
-                            card_index = int(choice[1])
-                        except ValueError:
-                            print("ERROR: Invalid integer")
-                        except IndexError:
-                            print("ERROR: Need 1 player # parameter, given 0")
-                        else:
-                            card_index -= 1
-                            # TODO activation from other zones support
-                            p_field = self.battlefield[index]
-                            if 0 <= card_index < len(p_field):
-                                self._activate(p_field, card_index, self.players[index].mana_pool)
-                            else:
-                                print("ERROR: Invalid card #")
-                    elif choice[0] == "field":
-                        print_u.print_field(self.battlefield)
-                    elif self.debug:
-                        if choice[0] == "hand":
-                            try:
-                                p_index = int(choice[1]) - 1
-                            except ValueError:
-                                print("ERROR: Invalid integer")
-                            except IndexError:
-                                print("ERROR: Need 1 player # parameter, given 0")
-                            else:
-                                if 0 <= p_index < len(self.players):
-                                    print_u.print_hand(p_index, self.players[p_index])
-                                else:
-                                    print("ERROR: Invalid player #")
-                        else:
-                            print("ERROR: Invalid input")
+                                print("ERROR: Invalid player #")
                     else:
                         print("ERROR: Invalid input")
-            if index == 0:
-                if not self.ai_only:
-                    user_has_priority()
                 else:
-                    # TODO continue adding AI options in future!
-                    # ai is making choice
-                    pass
+                    print("ERROR: Invalid input")
+        if index == 0:
+            if not self.ai_only:
+                user_has_priority()
             else:
-                if self.debug:
-                    user_has_priority()
-                else:
-                    pass
+                # TODO continue adding AI options in future!
+                # ai is making choice
+                pass
+        else:
+            if self.debug:
+                user_has_priority()
+            else:
+                pass
 
     def empty_mana_pools(self):
         for player in self.players:
@@ -158,21 +160,24 @@ class Game:
         card: "card_mod.Card" = zone.get(card_index)
         active = p.active
         if card.card_type == "Land":
-            self._play_land(card, zone, card_index, p_index, active, p.under_land_limit, p.lands_played)
+            self._play_land(card, zone, card_index, p_index, active, p.under_land_limit(), p.lands_played)
         elif card.card_type == "Creature":
-            self._play_creature(card, zone, card_index, active, p.mana_pool)
+            self._cast_creature(card, zone, card_index, active, p.mana_pool)
 
-    def _play_creature(self, card, zone, card_index, active, mana_pool):
-        zone.remove(card_index)
-        self._stack.push(card)
+    def _cast_creature(self, card, zone, card_index, active, mana_pool):
+        # TODO [CR 601.3a] to [CR 601.3b] (exceptions to casting restrictions)
+        # ^ We check legality DURING cast [CR 601.2e], not BEFORE (it seems).
         # [CR 601.2e]
         if self._met_creature_restrictions(active):
-            payed_costs = False
+            zone.remove(card_index)
+            self._stack.push(card)
             # XXX make mana types more verbose "Green" and simpler?
             generic_cost = 1
             specific_types = {mt.ManaTypes.G.name: 1}
-            while not payed_costs:
-                mana_payed = input("Pay Mana: ")
+            while True:
+                raw_input = input("Pay Mana: ")
+                try:
+                    mt.ManaTypes[mana_payed]
                 if mana_payed in mt.ManaTypes.__members__:
                     if mana_pool.remove(mana_payed):
                         if (mana_payed in specific_types) and (specific_types[mana_payed] > 0):

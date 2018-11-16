@@ -6,19 +6,19 @@ from new_src import hand
 from new_src import game as game_mod
 from new_src import turn_actions
 
-def init_game():
-    new_game = game_mod.Game()
-    new_game.debug = True
-    new_game.ai_only = False
-    new_game.players = [player_mod.Player(), player_mod.Player()]
+
+def init_game(game):
+    game.debug = True
+    game.ai_only = False
+    game.players = [player_mod.Player(), player_mod.Player()]
     # XXX avoid hard setting attributes?
-    new_game.players[0].deck = deck.Deck()
-    new_game.players[0].hand = hand.Hand()
-    new_game.players[1].deck = deck.Deck()
-    new_game.players[1].hand = hand.Hand()
-    fill_decks(new_game)
-    new_game.battlefield = []
-    init_battlefield(new_game)
+    game.players[0].deck = deck.Deck()
+    game.players[0].hand = hand.Hand()
+    game.players[1].deck = deck.Deck()
+    game.players[1].hand = hand.Hand()
+    fill_decks(game)
+    game.battlefield = []
+    init_battlefield(game)
 
 
 def fill_decks(game):
@@ -84,7 +84,8 @@ def choose_first_player(game: "game_mod.Game"):
     return first
 
 
-init_game()
+new_game = game_mod.Game()
+init_game(new_game)
 # have your code like this, where init game doesn't stick around forever)
 start_game(new_game)
 

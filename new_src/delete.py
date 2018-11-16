@@ -1,8 +1,20 @@
 import enum
-import dis
-# class EnumTest(enum.Enum):
-#     A = 1
-#     B = 2
+# import dis
+
+
+class EnumTest(enum.Enum):
+    A = 1
+    B = 2
+
+
+x = "A"
+try:
+    choice = EnumTest[x]
+except KeyError:
+    print("key not found")
+else:
+    print("key IS found")
+# print(type(EnumTest[x]))
 
 # def foo():
 #   t.name
