@@ -119,10 +119,25 @@ start_game(new_game)
 # import tkinter as tk
 #
 # root = tk.Tk()
-# root.title("test")
+# root.title("title")
+#
+# label1 = tk.Label(root, text="test label")
+# e1 = tk.Entry(root)
+#
+#
+# def get_entry():
+#     print(e1.get())
+#
+#
+# button = tk.Button(root, command=get_entry)
+#
+# label1.pack()
+# e1.pack()
+# button.pack()
+#
 # # lift and topmost = true automatically brings window to top
 # # topmost = false so it isn't stuck on top
 # root.lift()
 # root.attributes('-topmost',True)
-# root.after_idle(root.attributes,'-topmost',False)
+# root.after_idle(root.attributes, '-topmost', False)
 # root.mainloop()
