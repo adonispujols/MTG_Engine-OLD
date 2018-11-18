@@ -7,6 +7,8 @@ from new_src.convert import stack
 from new_src.convert import card as card_mod
 from new_src.convert import print_utils as print_u
 from new_src.convert import mana_types as mt
+from new_src.convert import deck
+from new_src.convert import hand
 
 
 class Game:
@@ -17,12 +19,30 @@ class Game:
     def __init__(self):
         self.debug = True
         self.ai_only = False
-        self.players = None
-        self.battlefield = None
+        self.players = [player_mod.Player(), player_mod.Player()]
+        self.players[0].deck = deck.Deck()
+        self.players[0].hand = hand.Hand()
+        self.players[1].deck = deck.Deck()
+        self.players[1].hand = hand.Hand()
+        self._fill_decks()
+        self.battlefield = []
+        self._init_battlefield()
         self._stack = stack.Stack()
         self._passes = passes.Passes()
         # initially none until 1st turn
         self.step_or_phase = None
+
+    def _fill_decks(self):
+        for i in range(10):
+            self.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
+            self.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))
+        for i in range(10):
+            self.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
+            self.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
+
+    def _init_battlefield(self):
+        for _ in self.players:
+            self.battlefield.append([])
 
     def _print_hand_and_decks(self):
         for i, player in enumerate(self.players):
@@ -160,6 +180,12 @@ class Game:
 
     def _cast_creature(self, card, zone, card_index, active, mana_pool):
         # TODO [CR 601.3a] to [CR 601.3b] (exceptions to casting restrictions)
+        # TODO check for legality at [CR 601.2e], not before!
+        # XXX can add somewhat-accurate hints (warn sorcery/instant, etc), but
+        # - allow user to try (until completely accurate).
+        # TODO deque for actions (resolve as queue, undo as stack)
+        # ^ Try bluff (no-sde effect) payments, "undo" by doing reverse, and then
+        # "do real" in queue order once all costs are payed.
         # [CR 601.2e]
         if self._met_creature_restrictions(active):
             # [CR 601.2a]
@@ -199,6 +225,7 @@ class Game:
             self.battlefield[player_index].append(card)
             lands_played.inc()
 
+    # noinspection PyMethodMayBeStatic
     def _activate(self, zone, card_index, mana_pool):
         # TODO [CR 605.3c] mana ability must resolve completely before activating it again
         card: "card_mod.Card" = zone[card_index]

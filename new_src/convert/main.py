@@ -7,17 +7,17 @@ from new_src.convert import game as game_mod
 from new_src.convert import turn_actions
 
 
-def init_game(game):
-    game.debug = True
-    game.ai_only = False
-    game.players = [player_mod.Player(), player_mod.Player()]
-    game.players[0].deck = deck.Deck()
-    game.players[0].hand = hand.Hand()
-    game.players[1].deck = deck.Deck()
-    game.players[1].hand = hand.Hand()
-    fill_decks(game)
-    game.battlefield = []
-    init_battlefield(game)
+def init_game(game): #
+    game.debug = True #
+    game.ai_only = False #
+    game.players = [player_mod.Player(), player_mod.Player()] #
+    game.players[0].deck = deck.Deck() #
+    game.players[0].hand = hand.Hand() #
+    game.players[1].deck = deck.Deck() #
+    game.players[1].hand = hand.Hand()#
+    fill_decks(game) #
+    game.battlefield = [] #
+    init_battlefield(game) #
 
 
 def fill_decks(game):
