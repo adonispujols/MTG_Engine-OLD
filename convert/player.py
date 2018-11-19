@@ -1,7 +1,7 @@
-from new_src.convert import deck
-from new_src.convert import hand
-from new_src.convert import lands_played as lp
-from new_src.convert import mana_pool
+from convert import hand
+from convert import mana_pool
+from convert import lands_played as lp
+from convert import deck
 
 
 class Player:

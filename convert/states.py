@@ -1,10 +1,10 @@
+import tkinter as tk
 import abc
 import random
 import functools
 import typing
-
-from new_src.convert import turn_actions
-
+from convert import turn_actions
+from convert import game as game_mod
 
 
 class State(abc.ABC):
@@ -21,7 +21,7 @@ class State(abc.ABC):
 class ChoosingStartingPlayer(State):
     choose_btns: typing.List["tk.Button"]
 
-    def __init__(self, game: "Game"):
+    def __init__(self, game: "game_mod.Game"):
         self.game = game
         self.choose_btns = []
 
@@ -45,19 +45,3 @@ class ChoosingStartingPlayer(State):
         # [CR 103.7]
         turn_actions.first_untap_(self.game, event)
         # TODO return result from turn actions
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = Game(parent=root)
-
-    Game.choosing_starting_player = ChoosingStartingPlayer(app)
-    Game.current_state = Game.choosing_starting_player
-
-    # do NOT remove these three lines (lift, attributes, after_idle)
-    # needed to automatically bring tkinter window to front.
-    root.lift()
-    root.attributes('-topmost', True)
-    root.after_idle(root.attributes, '-topmost', False)
-    root.after_idle(Game.current_state.run())
-    root.mainloop()

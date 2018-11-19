@@ -1,10 +1,10 @@
 import random
-from new_src.convert import player as player_mod
-from new_src.convert import deck
-from new_src.convert import card as card_mod
-from new_src.convert import hand
-from new_src.convert import game as game_mod
-from new_src.convert import turn_actions
+from convert import hand
+from convert import turn_actions
+from convert import game as game_mod
+from convert import deck
+from convert import player as player_mod
+from convert import card as card_mod
 
 
 def init_game(game): #
