@@ -20,33 +20,33 @@ class State(abc.ABC):
 
 # According to [CR 103]
 class ChoosingStartingPlayer(State):
-    choose_btns: typing.List["tk.Button"]
+    _choose_btns: typing.List["tk.Button"]
 
     def __init__(self, game: "game_mod.Game"):
-        self.game = game
-        self.choose_btns = []
+        self._game = game
+        self._choose_btns = []
 
     def run(self):
         # [CR 103.2]
-        index = random.randrange(len(self.game.players))
-        player_label = tk.Label(self.game,
+        index = random.randrange(len(self._game.players))
+        player_label = tk.Label(self._game,
                                 text="P{}, who goes first?".format(index + 1))
         player_label.grid()
         # for user to choose (and in debug)
-        for i in self.game.players:
-            choose_btn = tk.Button(self.game,
-                                   text=i, command=functools.partial(self.game.advance, i))
-            self.choose_btns.append(choose_btn)
+        for i in self._game.players:
+            choose_btn = tk.Button(self._game,
+                                   text=i, command=functools.partial(self._game.advance, i))
+            self._choose_btns.append(choose_btn)
             choose_btn.grid()
         # TODO give AI option/ability to choose
 
     def next(self, event):
-        for btn in self.choose_btns:
+        for btn in self._choose_btns:
             btn.destroy()
-        self.choose_btns.clear()
+        self._choose_btns.clear()
         # [CR 103.7]
-        self.game.on_first_untap.new_active = event  # event = p index chosen
-        return self.game.on_first_untap
+        self._game.on_first_untap.new_active = event  # event = p index chosen
+        return self._game.on_first_untap
 
 
 class OnUntap(State):
@@ -61,11 +61,10 @@ class OnUntap(State):
         self.game.reset_lands_played()
         self.game.untap_all_of_active()
         self.game.empty_mana_pools()
-        self.game.event_generate(bnd.Bindings.START_NEXT_STEP_OR_PHASE.value, when="tail")
+        self.game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, event):
-        # next upkeep
-        pass
+        return self.game.on_upkeep
 
     def switch_active(self):
         prev_active = self.game.active_index()
@@ -73,15 +72,11 @@ class OnUntap(State):
         self.new_active = (prev_active + 1) % len(self.game.players)
 
 
-
 class OnFirstUntap(OnUntap):
-    def next(self, event):
-        # return first upkeep step
-        pass
-
     # dummy
     def switch_active(self):
         pass
+
 
 class OnUpkeep(State):
     def __init__(self, game: "game_mod.Game"):
@@ -89,9 +84,28 @@ class OnUpkeep(State):
 
     def run(self):
         self.game.step_or_phase = tp.TurnParts.UPKEEP
-        # send priority event
+        # send priority event, letting them know which player
         # game.give_player_priority(game.active_index())
 
     def next(self, event):
+        self.game.on_give_priority
+        return OnGivePriority
+        # todo return give priority
+
+
+class OnGivePriority(State):
+    def __init__(self, game: "game_mod.Game"):
+        self.game = game
+        self.index = None
+
+    def run(self):
+        # TODO check for state based actions
+        self.game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, event):
+        # return inpriority
         pass
-        # return give priority
+
+# TODO Again, need to give AI options
+# for prioirty
+# class

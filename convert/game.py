@@ -35,6 +35,8 @@ class Game(tk.Frame):
         # state machine
         self.choosing_starting_player = states.ChoosingStartingPlayer(self)
         self.on_first_untap = states.OnFirstUntap(self)
+        self.on_upkeep = states.OnUpkeep(self)
+        self.on_give_priority = states.OnGivePriority(self)
         self.current_state = self.choosing_starting_player
         self.init_game()
 
@@ -47,7 +49,7 @@ class Game(tk.Frame):
         # self.hi_there["text"] = "test"
         self.test_btn.grid()
         # root.bind("<<Foo>>", okay)
-        self.bind(bnd.Bindings.START_NEXT_STEP_OR_PHASE.value, self.advance())
+        self.bind(bnd.Bindings.ADVANCE.value, self.advance())
 
     # state machine
     def advance(self, event=None):
