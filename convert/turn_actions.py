@@ -5,12 +5,8 @@ from convert import turn_parts as tp
 
 def first_untap_(game: "game_mod.Game", first_player):
     game.step_or_phase = tp.TurnParts.UNTAP
-    step_or_phase_label = tk.Label(game, text="Untap step")
     game.players[first_player].make_active()
-    print("Active Player:", first_player + 1)
     game.reset_lands_played()
-    # TBA = "Turn-Based Action", SBA = "State-Based Action"
-    print("TBA: Active untaps all")
     game.untap_all_of_active()
     game.empty_mana_pools()
     _upkeep(game)

@@ -28,9 +28,9 @@ class ChoosingStartingPlayer(State):
     def run(self):
         # [CR 103.2]
         index = random.randrange(len(self.game.players))
-        player_label = tk.Label(self.game,
-                                text="P{0}, who goes first?".format(index + 1))
-        player_label.grid()
+        # player_label = tk.Label(self.game,
+        #                         text="P{}, who goes first?".format(index + 1))
+        # player_label.grid()
         for i in self.game.players:
             choose_btn = tk.Button(self.game,
                                    text=i, command=functools.partial(self.game.advance, i))
@@ -45,3 +45,14 @@ class ChoosingStartingPlayer(State):
         # [CR 103.7]
         turn_actions.first_untap_(self.game, event)
         # TODO return result from turn actions
+        return False
+
+class FirstUntap(State):
+    def __init__(self, game):
+        self.game = game
+
+    def run(self):
+        pass
+
+    def next(self, event):
+        pass
