@@ -16,15 +16,21 @@ def test_2(index):
     time.sleep(.1)
 
 
-def okay():
+# noinspection PyUnusedLocal
+def okay(event):
     print("okay")
+
+
+def foo():
+    root.event_generate("<<Foo>>", when="tail")
+    print("Before okay (event actually queued okay(), instead of calling immediately)")
 
 
 root = tk.Tk()
 root.title("title")
 
-test4 = tk.Label(text="helllloooo")
-test4.grid()
+root.bind("<<Foo>>", okay)
+root.after_idle(foo)
 
 button = tk.Button(root, text="button", command=test)
 okay_button = tk.Button(root, text="okay", command=okay)

@@ -13,17 +13,14 @@ def first_untap_(game: "game_mod.Game", first_player):
 
 
 def _untap(game: "game_mod.Game"):
-    print("Untap step")
-    game.step_or_phase = tp.TurnParts.UNTAP
+    game.step_or_phase = tp.TurnParts.UNTAP #
     prev_active = game.active_index()
     game.players[prev_active].make_inactive()
     new_active = (prev_active + 1) % len(game.players)
-    game.players[new_active].make_active()
-    print("Active Player:", new_active + 1)
-    game.reset_lands_played()
-    game.untap_all_of_active()
-    print("TBA: Active untaps all")
-    game.empty_mana_pools()
+    game.players[new_active].make_active() #
+    game.reset_lands_played() #
+    game.untap_all_of_active() #
+    game.empty_mana_pools() #
     _upkeep(game)
 
 

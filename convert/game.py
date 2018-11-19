@@ -10,6 +10,7 @@ from convert import turn_actions
 from convert import turn_parts as tp
 from convert import mana_types as mt
 from convert import states
+from convert import bindings as bnd
 
 class Game(tk.Frame):
     players: typing.List["player_mod.Player"]
@@ -32,7 +33,9 @@ class Game(tk.Frame):
         # initially none until 1st turn
         self.step_or_phase = None
         # state machine
-        self.current_state = None
+        self.choosing_starting_player = states.ChoosingStartingPlayer(self)
+        self.first_untap = states.FirstUntap(self)
+        self.current_state = self.choosing_starting_player
         self.init_game()
 
     # gui
@@ -43,6 +46,13 @@ class Game(tk.Frame):
         # alt definition of parameters (might only work BEFORE mainloop() starts)
         # self.hi_there["text"] = "test"
         self.test_btn.grid()
+        # root.bind("<<Foo>>", okay)
+        self.bind(bnd.Bindings.START_NEXT_STEP_OR_PHASE.value, self.advance())
+
+    # state machine
+    def advance(self, event=None):
+        self.current_state = self.current_state.next(event)
+        self.current_state.run()
 
     # main logic
     def init_game(self):
@@ -61,11 +71,6 @@ class Game(tk.Frame):
         # [CR 103.1], 1st part of starting game
         for player in self.players:
             player.deck.shuffle()
-
-    # state machine
-    def advance(self, event):
-        self.current_state = self.current_state.next(event)
-        self.current_state.run()
 
     def _in_main_phase(self):
         return (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
@@ -236,6 +241,8 @@ class Game(tk.Frame):
             # [CR 601.2i] successfully cast
 
     def _play_land(self, card, zone, card_index, player_index, active, under_land_limit, lands_played):
+        # TODO ensure [CR 305.2b] and [CR 305.3]; NO effect bypasses "play land" restrictions.
+        # ^ It's ok to increase max lands [CR 305.2], or "put" on battlefield [CR 305.4].
         # [CR 115.2a].2
         if self._met_land_restrictions(active, under_land_limit):
             # [CR 115.2a].1
