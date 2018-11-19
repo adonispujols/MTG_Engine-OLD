@@ -38,7 +38,7 @@ class ChoosingStartingPlayer(State):
                                    text=i, command=functools.partial(self._game.advance, i))
             self._choose_btns.append(choose_btn)
             choose_btn.grid()
-        # TODO give AI option/ability to choose
+        # TODO give AI ability to choose
 
     def next(self, event):
         for btn in self._choose_btns:
@@ -102,17 +102,25 @@ class OnGivePriority(State):
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, event):
-        # return haspriority giviing it index
+        self._game.in_priority.index = self.index
         pass
 
-class HasPriority(State):
+
+class InPriority(State):
     def __init__(self, game: "game_mod.Game"):
         self._game = game
+        self._init_gui()
         self.index = None
+
+    def _init_gui(self):
+        button = tk.Button(self._game, text="pass")
+        button.bind()
+        button.grid()
 
     def run(self):
         # TODO Again, need to give AI options
         pass
 
     def next(self, event):
+        # TODO react based on option
         pass

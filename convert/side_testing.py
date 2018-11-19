@@ -17,8 +17,9 @@ def test_2(index):
 
 
 # noinspection PyUnusedLocal
-def okay(event):
-    print("okay")
+def okay(event, _):
+    print("useful", event)
+    print("useless tk.Event from event generate", _)
 
 
 def foo():
@@ -29,7 +30,7 @@ def foo():
 root = tk.Tk()
 root.title("title")
 
-root.bind("<<Foo>>", okay)
+v = root.bind("<<Foo>>", functools.partial(okay, 2))
 root.after_idle(foo)
 
 button = tk.Button(root, text="button", command=test)

@@ -37,6 +37,7 @@ class Game(tk.Frame):
         self.on_first_untap = states.OnFirstUntap(self)
         self.on_upkeep = states.OnUpkeep(self)
         self.on_give_priority = states.OnGivePriority(self)
+        self.in_priority = states.InPriority(self)
         self.current_state = self._choosing_starting_player
         self._init_game()
 
@@ -52,7 +53,8 @@ class Game(tk.Frame):
         self.bind(bnd.Bindings.ADVANCE.value, self.advance())
 
     # state machine
-    def advance(self, event=None):
+    def advance(self, _, event=None):
+        # _ = useless tk.Event
         self.current_state = self.current_state.next(event)
         self.current_state.run()
 
