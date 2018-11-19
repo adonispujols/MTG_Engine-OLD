@@ -1,8 +1,8 @@
-from new_src.convert import game as game_mod
+# from new_src.convert import game as game_mod
 from new_src.convert import turn_parts as tp
 
 
-def first_untap_of_game(game: "game_mod.Game", first_player):
+def first_untap_(game: "game_mod.Game", first_player):
     game.step_or_phase = tp.TurnParts.UNTAP
     print("Start: First Untap step")
     game.players[first_player].make_active()
