@@ -10,7 +10,7 @@ from convert import bindings as bnd
 
 class State(abc.ABC):
     @abc.abstractmethod
-    def run(self):
+    def run(self, message):
         pass
 
     @abc.abstractmethod
@@ -18,7 +18,6 @@ class State(abc.ABC):
         pass
 
 
-# According to [CR 103]
 class ChoosingStartingPlayer(State):
     _choose_btns: typing.List["tk.Button"]
 
@@ -26,7 +25,7 @@ class ChoosingStartingPlayer(State):
         self._game = game
         self._choose_btns = []
 
-    def run(self):
+    def run(self, _):
         # [CR 103.2]
         index = random.randrange(len(self._game.players))
         player_label = tk.Label(self._game,
@@ -35,29 +34,26 @@ class ChoosingStartingPlayer(State):
         # for user to choose (and in debug)
         for i in self._game.players:
             choose_btn = tk.Button(self._game,
-                                   text=i, command=functools.partial(self._game.advance, i))
+                                   text=i, command=functools.partial(self._game.advance, event=i))
             self._choose_btns.append(choose_btn)
             choose_btn.grid()
         # TODO give AI ability to choose
 
-    def next(self, event):
+    def next(self, starting_player):
         for btn in self._choose_btns:
             btn.destroy()
         self._choose_btns.clear()
         # [CR 103.7]
-        self._game.on_first_untap.new_active = event  # event = p index chosen
-        return self._game.on_first_untap
+        return OnFirstUntap(self._game, starting_player)
 
 
 class OnUntap(State):
     def __init__(self, game: "game_mod.Game"):
         self._game = game
-        self.new_active = None
 
-    def run(self):
+    def run(self, _):
         self._game.step_or_phase = tp.TurnParts.UNTAP
-        self.switch_active()
-        self._game.players[self.new_active].make_active()
+        self._game.players[self.switch_active()].make_active()
         self._game.reset_lands_played()
         self._game.untap_all_of_active()
         self._game.empty_mana_pools()
@@ -69,13 +65,16 @@ class OnUntap(State):
     def switch_active(self):
         prev_active = self._game.active_index()
         self._game.players[prev_active].make_inactive()
-        self.new_active = (prev_active + 1) % len(self._game.players)
+        return (prev_active + 1) % len(self._game.players)
 
 
 class OnFirstUntap(OnUntap):
-    # dummy
+    def __init__(self, game: "game_mod.Game", starting_player):
+        super().__init__(game)
+        self._starting_player = starting_player
+
     def switch_active(self):
-        pass
+        return self._starting_player
 
 
 class OnUpkeep(State):
