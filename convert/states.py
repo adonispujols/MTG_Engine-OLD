@@ -51,25 +51,25 @@ class ChoosingStartingPlayer(State):
 
 class OnUntap(State):
     def __init__(self, game: "game_mod.Game"):
-        self.game = game
+        self._game = game
         self.new_active = None
 
     def run(self):
-        self.game.step_or_phase = tp.TurnParts.UNTAP
+        self._game.step_or_phase = tp.TurnParts.UNTAP
         self.switch_active()
-        self.game.players[self.new_active].make_active()
-        self.game.reset_lands_played()
-        self.game.untap_all_of_active()
-        self.game.empty_mana_pools()
-        self.game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+        self._game.players[self.new_active].make_active()
+        self._game.reset_lands_played()
+        self._game.untap_all_of_active()
+        self._game.empty_mana_pools()
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, event):
-        return self.game.on_upkeep
+        return self._game.on_upkeep
 
     def switch_active(self):
-        prev_active = self.game.active_index()
-        self.game.players[prev_active].make_inactive()
-        self.new_active = (prev_active + 1) % len(self.game.players)
+        prev_active = self._game.active_index()
+        self._game.players[prev_active].make_inactive()
+        self.new_active = (prev_active + 1) % len(self._game.players)
 
 
 class OnFirstUntap(OnUntap):
@@ -80,32 +80,39 @@ class OnFirstUntap(OnUntap):
 
 class OnUpkeep(State):
     def __init__(self, game: "game_mod.Game"):
-        self.game = game
+        self._game = game
 
     def run(self):
-        self.game.step_or_phase = tp.TurnParts.UPKEEP
+        self._game.step_or_phase = tp.TurnParts.UPKEEP
         # send priority event, letting them know which player
         # game.give_player_priority(game.active_index())
 
     def next(self, event):
-        self.game.on_give_priority
+        self._game.on_give_priority.index = event
         return OnGivePriority
-        # todo return give priority
 
 
 class OnGivePriority(State):
     def __init__(self, game: "game_mod.Game"):
-        self.game = game
+        self._game = game
         self.index = None
 
     def run(self):
-        # TODO check for state based actions
-        self.game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+        # TODO check for state based actions (perhaps make into separate state)
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, event):
-        # return inpriority
+        # return haspriority giviing it index
         pass
 
-# TODO Again, need to give AI options
-# for prioirty
-# class
+class HasPriority(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+        self.index = None
+
+    def run(self):
+        # TODO Again, need to give AI options
+        pass
+
+    def next(self, event):
+        pass
