@@ -1,4 +1,3 @@
-import time
 import tkinter as tk
 import functools
 
@@ -13,32 +12,17 @@ def test():
 
 def test_2(index):
     print("test 2 done. i: ", index)
-    time.sleep(.1)
-
-
-# noinspection PyUnusedLocal
-def okay(event, _):
-    print("useful", event)
-    print("useless tk.Event from event generate", _)
-
-
-def foo():
-    root.event_generate("<<Foo>>", when="tail")
-    print("Before okay (event actually queued okay(), instead of calling immediately)")
 
 
 root = tk.Tk()
 root.title("title")
-
-v = root.bind("<<Foo>>", functools.partial(okay, 2))
-root.after_idle(foo)
-
 button = tk.Button(root, text="button", command=test)
-okay_button = tk.Button(root, text="okay", command=okay)
-
 button.grid()
-okay_button.grid()
 
+# TODO USE .config(command="") TO REMOVE COMMANDS FROM BUTTONS, NOT UNBIND!
+# button.config(command="")
+# TODO DON'T REMOVE COMMAND/BUTTON IF YOU WANT IT TO STAY. DISABLE BUTTON, INSTEAD!
+button.config(state=tk.DISABLED)
 # lift and topmost = true automatically brings window to top
 # topmost = false so it isn't stuck on top
 root.lift()

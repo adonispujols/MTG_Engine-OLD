@@ -6,9 +6,9 @@ if __name__ == "__main__":
     app = game.Game(parent=root)
 
     # do NOT remove these three lines (lift, attributes, after_idle)
-    # needed to automatically bring tkinter window to front.
+    # ^ needed to automatically bring tkinter window to front.
     root.lift()
     root.attributes('-topmost', True)
     root.after_idle(root.attributes, '-topmost', False)
-    root.after_idle(app.current_state.run())
+    root.after_idle(app.current_state.run, None)
     root.mainloop()

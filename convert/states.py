@@ -32,7 +32,7 @@ class ChoosingStartingPlayer(State):
                                 text="P{}, who goes first?".format(index + 1))
         player_label.grid()
         # for user to choose (and in debug)
-        for i in self._game.players:
+        for i in range(len(self._game.players)):
             choose_btn = tk.Button(self._game,
                                    text=i, command=functools.partial(self._game.advance, event=i))
             self._choose_btns.append(choose_btn)
@@ -81,7 +81,7 @@ class OnUpkeep(State):
     def __init__(self, game: "game_mod.Game"):
         self._game = game
 
-    def run(self):
+    def run(self, _):
         self._game.step_or_phase = tp.TurnParts.UPKEEP
         # send priority event, letting them know which player
         # game.give_player_priority(game.active_index())
@@ -96,7 +96,7 @@ class OnGivePriority(State):
         self._game = game
         self.index = None
 
-    def run(self):
+    def run(self, _):
         # TODO check for state based actions (perhaps make into separate state)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
@@ -108,6 +108,7 @@ class OnGivePriority(State):
 class InPriority(State):
     def __init__(self, game: "game_mod.Game"):
         self._game = game
+        # TODO should delay this
         self._init_gui()
         self.index = None
 
@@ -116,7 +117,7 @@ class InPriority(State):
         button.bind()
         button.grid()
 
-    def run(self):
+    def run(self, _):
         # TODO Again, need to give AI options
         pass
 
