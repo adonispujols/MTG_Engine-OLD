@@ -6,7 +6,7 @@ from convert import passes
 from convert import deck
 from convert import player as player_mod
 from convert import card as card_mod
-from convert import turn_actions
+# from convert import turn_actions
 from convert import turn_parts as tp
 from convert import mana_types as mt
 from convert import states
@@ -102,19 +102,19 @@ class Game(tk.Frame):
         for player in self.players:
             player.lands_played.reset()
 
-    # TODO Obviously horrible, doesn't end, and needs a touch up:
-    def _pass_priority(self, index):
-        self._passes.inc()
-        next_player = self.players[(index + 1) % len(self.players)]
-        # TODO take into account actions + stack being empty.
-        if next_player.active:
-            if int(self._passes) == len(self.players):
-                self._passes.reset()
-                self.empty_mana_pools()
-                turn_actions.start_next_step_or_phase(self, self.step_or_phase)
-            self._passes.reset()
-        else:
-            self.give_player_priority((index + 1) % len(self.players))
+    # # TODO Obviously horrible, doesn't end, and needs a touch up:
+    # def _pass_priority(self, index):
+    #     self._passes.inc()
+    #     next_player = self.players[(index + 1) % len(self.players)]
+    #     # TODO take into account actions + stack being empty.
+    #     if next_player.active:
+    #         if int(self._passes) == len(self.players):
+    #             self._passes.reset()
+    #             self.empty_mana_pools()
+    #             turn_actions.start_next_step_or_phase(self, self.step_or_phase)
+    #         self._passes.reset()
+    #     else:
+    #         self.give_player_priority((index + 1) % len(self.players))
     #
     # def give_player_priority(self, index):
     #     def user_has_priority():

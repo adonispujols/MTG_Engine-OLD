@@ -26,7 +26,7 @@ class ChoosingStartingPlayer(State):
         self._choose_btns = []
 
     def run(self, _):
-        # [CR 103.2] 
+        # [CR 103.2]
         index = random.randrange(len(self._game.players))
         player_label = tk.Label(self._game,
                                 text="P{}, who goes first?".format(index + 1))
