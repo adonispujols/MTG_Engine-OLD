@@ -7,6 +7,7 @@ from convert import game as game_mod
 from convert import turn_parts as tp
 from convert import bindings as bnd
 
+
 class State(abc.ABC):
     @abc.abstractmethod
     def run(self):
@@ -44,25 +45,53 @@ class ChoosingStartingPlayer(State):
             btn.destroy()
         self.choose_btns.clear()
         # [CR 103.7]
-        self.game.first_untap.starting_player = event  # event = p index chosen
-        return self.game.first_untap
+        self.game.on_first_untap.new_active = event  # event = p index chosen
+        return self.game.on_first_untap
 
 
-class FirstUntap(State):
+class OnUntap(State):
     def __init__(self, game: "game_mod.Game"):
         self.game = game
-        self.starting_player = None
+        self.new_active = None
 
     def run(self):
         self.game.step_or_phase = tp.TurnParts.UNTAP
-        self.game.players[self.starting_player].make_active()
+        self.switch_active()
+        self.game.players[self.new_active].make_active()
         self.game.reset_lands_played()
         self.game.untap_all_of_active()
         self.game.empty_mana_pools()
         self.game.event_generate(bnd.Bindings.START_NEXT_STEP_OR_PHASE.value, when="tail")
 
     def next(self, event):
+        # next upkeep
+        pass
+
+    def switch_active(self):
+        prev_active = self.game.active_index()
+        self.game.players[prev_active].make_inactive()
+        self.new_active = (prev_active + 1) % len(self.game.players)
+
+
+
+class OnFirstUntap(OnUntap):
+    def next(self, event):
         # return first upkeep step
         pass
 
-class
+    # dummy
+    def switch_active(self):
+        pass
+
+class OnUpkeep(State):
+    def __init__(self, game: "game_mod.Game"):
+        self.game = game
+
+    def run(self):
+        self.game.step_or_phase = tp.TurnParts.UPKEEP
+        # send priority event
+        # game.give_player_priority(game.active_index())
+
+    def next(self, event):
+        pass
+        # return give priority

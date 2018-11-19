@@ -25,7 +25,6 @@ def _untap(game: "game_mod.Game"):
 
 
 def _upkeep(game: "game_mod.Game"):
-    print("Upkeep")
     game.step_or_phase = tp.TurnParts.UPKEEP
     game.give_player_priority(game.active_index())
 

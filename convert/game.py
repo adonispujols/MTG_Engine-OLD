@@ -34,7 +34,7 @@ class Game(tk.Frame):
         self.step_or_phase = None
         # state machine
         self.choosing_starting_player = states.ChoosingStartingPlayer(self)
-        self.first_untap = states.FirstUntap(self)
+        self.on_first_untap = states.OnFirstUntap(self)
         self.current_state = self.choosing_starting_player
         self.init_game()
 
