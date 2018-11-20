@@ -6,6 +6,7 @@ import typing
 from convert import game as game_mod
 from convert import turn_parts as tp
 from convert import bindings as bnd
+from convert import events as ev
 
 
 class State(abc.ABC):
@@ -34,47 +35,41 @@ class ChoosingStartingPlayer(State):
         # for user to choose (and in debug)
         for i in range(len(self._game.players)):
             choose_btn = tk.Button(self._game,
-                                   text=i, command=functools.partial(self._game.advance, event=i))
+                                   text=i, command=functools.partial(self._game.advance, message=i))
             self._choose_btns.append(choose_btn)
             choose_btn.grid()
         # TODO give AI ability to choose
 
-    def next(self, starting_player):
+    def next(self, _):
         for btn in self._choose_btns:
             btn.destroy()
         self._choose_btns.clear()
         # [CR 103.7]
-        return OnFirstUntap(self._game, starting_player)
+        return self._game.on_untap
 
 
 class OnUntap(State):
     def __init__(self, game: "game_mod.Game"):
         self._game = game
+        self.first_untap = True
 
-    def run(self, _):
+    def run(self, starting_player):
         self._game.step_or_phase = tp.TurnParts.UNTAP
-        self._game.players[self.switch_active()].make_active()
+        if self.first_untap:
+            self._game.players[starting_player].make_active()
+            self.first_untap = False
+        else:
+            prev_active = self._game.active_index()
+            self._game.players[prev_active].make_inactive()
+            new_active = (prev_active + 1) % len(self._game.players)
+            self._game.players[new_active].make_active()
         self._game.reset_lands_played()
         self._game.untap_all_of_active()
         self._game.empty_mana_pools()
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
-    def next(self, event):
+    def next(self, _):
         return self._game.on_upkeep
-
-    def switch_active(self):
-        prev_active = self._game.active_index()
-        self._game.players[prev_active].make_inactive()
-        return (prev_active + 1) % len(self._game.players)
-
-
-class OnFirstUntap(OnUntap):
-    def __init__(self, game: "game_mod.Game", starting_player):
-        super().__init__(game)
-        self._starting_player = starting_player
-
-    def switch_active(self):
-        return self._starting_player
 
 
 class OnUpkeep(State):
@@ -83,44 +78,163 @@ class OnUpkeep(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.UPKEEP
-        # send priority event, letting them know which player
-        # game.give_player_priority(game.active_index())
-
-    def next(self, event):
-        self._game.on_give_priority.index = event
-        return OnGivePriority
-
-
-class OnGivePriority(State):
-    def __init__(self, game: "game_mod.Game"):
-        self._game = game
-        self.index = None
-
-    def run(self, _):
-        # TODO check for state based actions (perhaps make into separate state)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
-    def next(self, event):
-        self._game.in_priority.index = self.index
-        pass
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
 
 
 class InPriority(State):
     def __init__(self, game: "game_mod.Game"):
         self._game = game
-        # TODO should delay this
         self._init_gui()
         self.index = None
 
     def _init_gui(self):
-        button = tk.Button(self._game, text="pass")
-        button.bind()
-        button.grid()
+        self._pass_button = tk.Button(self._game,
+                                      text="pass", command=functools.partial(self._game.advance, event=ev.Events.PASS))
 
     def run(self, _):
-        # TODO Again, need to give AI options
-        pass
+        # TODO recall: need to give AI options here and elsewhere
+        self._pass_button.grid()
 
     def next(self, event):
-        # TODO react based on option
-        pass
+        self._pass_button.grid_remove()
+        if event == ev.Events.PASS:
+            return self._game.pass_priority(self.index)
+
+
+# TODO need to skip on first turn of game
+class OnDraw(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.DRAW
+        self._game.active_player().draw()
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+class OnPrecombat(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.PRECOMBAT_MAIN
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+class OnBeginCombat(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.BEGIN_COMBAT
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+# TODO skip to end combat (or postcombat phase?) if none
+class OnDeclareAttackers(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.DECLARE_ATTACKERS
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+class OnDeclareBlockers(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.DECLARE_BLOCKERS
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+# TODO skip if none
+class OnFirstStrikeDamage(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.FIRST_STRIKE_DAMAGE
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+class OnCombatDamage(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.COMBAT_DAMAGE
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+class OnEndCombat(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.END_COMBAT
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+class OnPostcombat(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.POSTCOMBAT_MAIN
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+class OnEndStep(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.END_STEP
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.give_priority(self._game.active_index())
+
+
+class OnCleanup(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+
+    def run(self, _):
+        self._game.step_or_phase = tp.TurnParts.CLEANUP
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, _):
+        return self._game.on_untap

@@ -35,10 +35,26 @@ class Game(tk.Frame):
         self.step_or_phase = None
         self._init_game()
         # state machine
+        self.on_untap = states.OnUntap(self)
         self.on_upkeep = states.OnUpkeep(self)
+        self.on_draw = states.OnDraw(self)
+        self.on_precombat = states.OnPrecombat(self)
+        self.on_begin_combat = states.OnBeginCombat(self)
+        self.on_declare_attackers = states.OnDeclareAttackers(self)
+        self.on_declare_blockers = states.OnDeclareBlockers(self)
+        self.on_first_strike_damage = states.OnFirstStrikeDamage(self)
+        self.on_combat_damage = states.OnCombatDamage(self)
+        self.on_end_combat = states.OnEndCombat(self)
+        self.on_post_combat = states.OnPostcombat(self)
+        self.on_end_step = states.OnEndStep(self)
+        self.on_cleanup = states.OnCleanup(self)
         self.on_give_priority = states.OnGivePriority(self)
         self.in_priority = states.InPriority(self)
         self.current_state = states.ChoosingStartingPlayer(self)
+        self._ON_STEP_OR_PHASE_STATES = (
+            self.on_untap, self.on_upkeep, self.on_draw, self.on_precombat, self.on_begin_combat,
+            self.on_declare_attackers, self.on_declare_blockers, self.on_first_strike_damage,
+            self.on_combat_damage, self.on_end_combat, self.on_post_combat, self.on_end_combat, self.on_cleanup)
 
     # gui
     def _init_gui(self):
@@ -101,6 +117,26 @@ class Game(tk.Frame):
     def reset_lands_played(self):
         for player in self.players:
             player.lands_played.reset()
+
+    def give_priority(self, index):
+        # TODO check for state based actions (perhaps make into separate state)
+        self.in_priority.index = index
+        return self.in_priority
+
+    def pass_priority(self, index):
+        self._passes.inc()
+        next_player = (index + 1) % len(self.players)
+        # TODO take into account actions + stack being empty.
+        if self.players[next_player].active:
+            if int(self._passes) == len(self.players):
+                self._passes.reset()
+                self.empty_mana_pools()
+                return self._start_next_step_or_phase()
+            self._passes.reset()
+        return self.give_priority(next_player)
+
+    def _start_next_step_or_phase(self):
+        return self._ON_STEP_OR_PHASE_STATES[self.step_or_phase.value + 1]
 
     # # TODO Obviously horrible, doesn't end, and needs a touch up:
     # def _pass_priority(self, index):
