@@ -1,6 +1,7 @@
 class Hand:
     def __init__(self):
         self._hand = []
+        self._hand
 
     def __repr__(self):
         return str(self._hand)

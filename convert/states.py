@@ -19,6 +19,28 @@ class State(abc.ABC):
         pass
 
 
+class InPriority(State):
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+        self._init_gui()
+        self.index = None
+
+    def _init_gui(self):
+        self._pass_button = tk.Button(self._game,
+                                      text="pass", command=functools.partial(self._game.advance, event=ev.Events.PASS))
+        # self._pass_button = tk.Button(self._game,
+        #            text="play", command=functools.partial(self._game.advance, event=ev.Events.PASS))
+
+    def run(self, _):
+        # TODO recall: need to give AI options here and elsewhere
+        self._pass_button.grid()
+
+    def next(self, event):
+        self._pass_button.grid_remove()
+        if event == ev.Events.PASS:
+            return self._game.pass_priority(self.index)
+
+
 class ChoosingStartingPlayer(State):
     _choose_btns: typing.List["tk.Button"]
 
@@ -86,26 +108,6 @@ class OnUpkeep(State):
 
     def next(self, _):
         return self._game.give_priority(self._game.active_index())
-
-
-class InPriority(State):
-    def __init__(self, game: "game_mod.Game"):
-        self._game = game
-        self._init_gui()
-        self.index = None
-
-    def _init_gui(self):
-        self._pass_button = tk.Button(self._game,
-                                      text="pass", command=functools.partial(self._game.advance, event=ev.Events.PASS))
-
-    def run(self, _):
-        # TODO recall: need to give AI options here and elsewhere
-        self._pass_button.grid()
-
-    def next(self, event):
-        self._pass_button.grid_remove()
-        if event == ev.Events.PASS:
-            return self._game.pass_priority(self.index)
 
 
 # TODO need to skip on first turn of game
