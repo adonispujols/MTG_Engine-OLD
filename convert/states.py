@@ -32,18 +32,22 @@ class ChoosingStartingPlayer(State):
         player_label = tk.Label(self._game,
                                 text="P{}, who goes first?".format(index + 1))
         player_label.grid()
-        # for user to choose (and in debug)
+        # for user to choose (choose for ai in debug)
         for i in range(len(self._game.players)):
             choose_btn = tk.Button(self._game,
                                    text=i, command=functools.partial(self._game.advance, message=i))
             self._choose_btns.append(choose_btn)
             choose_btn.grid()
-        # TODO give AI ability to choose
+        # TODO give AI ability to choose and add debug choice to override
 
     def next(self, _):
         for btn in self._choose_btns:
             btn.destroy()
         self._choose_btns.clear()
+        # [CR 103.4]
+        for player in self._game.players:
+            for _ in range(player.max_hand_size):
+                player.draw()
         # [CR 103.7]
         return self._game.on_untap
 

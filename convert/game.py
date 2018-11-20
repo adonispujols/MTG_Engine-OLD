@@ -6,7 +6,6 @@ from convert import passes
 from convert import deck
 from convert import player as player_mod
 from convert import card as card_mod
-# from convert import turn_actions
 from convert import turn_parts as tp
 from convert import mana_types as mt
 from convert import states
@@ -48,19 +47,16 @@ class Game(tk.Frame):
         self.on_post_combat = states.OnPostcombat(self)
         self.on_end_step = states.OnEndStep(self)
         self.on_cleanup = states.OnCleanup(self)
-        self.on_give_priority = states.OnGivePriority(self)
         self.in_priority = states.InPriority(self)
-        self.current_state = states.ChoosingStartingPlayer(self)
         self._ON_STEP_OR_PHASE_STATES = (
             self.on_untap, self.on_upkeep, self.on_draw, self.on_precombat, self.on_begin_combat,
             self.on_declare_attackers, self.on_declare_blockers, self.on_first_strike_damage,
-            self.on_combat_damage, self.on_end_combat, self.on_post_combat, self.on_end_combat, self.on_cleanup)
+            self.on_combat_damage, self.on_end_combat, self.on_post_combat, self.on_end_step, self.on_cleanup)
+        self.current_state = states.ChoosingStartingPlayer(self)
 
     # gui
     def _init_gui(self):
         self.grid()
-        # alt definition of parameters (might only work BEFORE mainloop() starts)
-        # self.hi_there["text"] = "test"
         self.bind(bnd.Bindings.ADVANCE.value, self.advance)
 
     # main logic - init
@@ -83,25 +79,12 @@ class Game(tk.Frame):
 
     # state machine
     def advance(self, _=None, event=None, message=None):
+        print(self.current_state, self.step_or_phase)
         # _ = useless tk.Event
         self.current_state = self.current_state.next(event)
         self.current_state.run(message)
 
     # main logic
-    def _in_main_phase(self):
-        return (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
-                or self.step_or_phase == tp.TurnParts.POSTCOMBAT_MAIN)
-
-    def _sorcery_speed(self, active):
-        return active and self._in_main_phase() and self._stack.empty()
-
-    def _met_land_restrictions(self, active, under_land_limit):
-        return self._sorcery_speed(active) and under_land_limit
-
-    def _met_creature_restrictions(self, active):
-        # [CR 302.1].?
-        return self._sorcery_speed(active)
-
     def active_index(self):
         for i, player in enumerate(self.players):
             if player.active:
@@ -118,6 +101,10 @@ class Game(tk.Frame):
         for player in self.players:
             player.lands_played.reset()
 
+    def empty_mana_pools(self):
+        for player in self.players:
+            player.mana_pool.empty()
+
     def give_priority(self, index):
         # TODO check for state based actions (perhaps make into separate state)
         self.in_priority.index = index
@@ -131,26 +118,11 @@ class Game(tk.Frame):
             if int(self._passes) == len(self.players):
                 self._passes.reset()
                 self.empty_mana_pools()
-                return self._start_next_step_or_phase()
+                # TODO will induce bug if we call while in cleanup step
+                # ^ Could just directly call untap (clearer than a wrap around % here)
+                return self._ON_STEP_OR_PHASE_STATES[self.step_or_phase.value + 1]
             self._passes.reset()
         return self.give_priority(next_player)
-
-    def _start_next_step_or_phase(self):
-        return self._ON_STEP_OR_PHASE_STATES[self.step_or_phase.value + 1]
-
-    # # TODO Obviously horrible, doesn't end, and needs a touch up:
-    # def _pass_priority(self, index):
-    #     self._passes.inc()
-    #     next_player = self.players[(index + 1) % len(self.players)]
-    #     # TODO take into account actions + stack being empty.
-    #     if next_player.active:
-    #         if int(self._passes) == len(self.players):
-    #             self._passes.reset()
-    #             self.empty_mana_pools()
-    #             turn_actions.start_next_step_or_phase(self, self.step_or_phase)
-    #         self._passes.reset()
-    #     else:
-    #         self.give_player_priority((index + 1) % len(self.players))
     #
     # def give_player_priority(self, index):
     #     def user_has_priority():
@@ -225,9 +197,19 @@ class Game(tk.Frame):
     #         else:
     #             pass
 
-    def empty_mana_pools(self):
-        for player in self.players:
-            player.mana_pool.empty()
+    def _in_main_phase(self):
+        return (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
+                or self.step_or_phase == tp.TurnParts.POSTCOMBAT_MAIN)
+
+    def _sorcery_speed(self, active):
+        return active and self._in_main_phase() and self._stack.empty()
+
+    def _met_land_restrictions(self, active, under_land_limit):
+        return self._sorcery_speed(active) and under_land_limit
+
+    def _met_creature_restrictions(self, active):
+        # [CR 302.1].?
+        return self._sorcery_speed(active)
 
     def _play(self, zone, card_index, p_index, p):
         card: "card_mod.Card" = zone.get(card_index)
@@ -296,5 +278,5 @@ class Game(tk.Frame):
             if card.tap():
                 # [CR 601.2i] successfully activated
                 # [CR 605.3a] resolve immediately after activation
-                mana_pool.add(mt.ManaTypes.G.value)
+                mana_pool.add(mt.ManaTypes.G)
                 # TODO [CR 116.3c] ONLY receive priority after cast/act/action IF had it before

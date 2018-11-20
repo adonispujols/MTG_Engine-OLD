@@ -1,3 +1,6 @@
+from convert import mana_types as mt
+
+
 class ManaPool:
     def __init__(self):
         self._pool = [0, 0, 0, 0, 0, 0]
@@ -8,7 +11,7 @@ class ManaPool:
     def empty(self):
         self._pool = [0 for _ in self._pool]
 
-    def remove(self, mana):
+    def remove(self, mana: "mt.ManaTypes"):
         index = mana.value
         if self._pool[index] > 0:
             self._pool[index] -= 1
