@@ -13,6 +13,7 @@ def test():
 def test_2(index):
     print("test 2 done. i: ", index)
 
+
 root = tk.Tk()
 root.title("title")
 button = tk.Button(root, text="button", command=test)
@@ -22,8 +23,7 @@ button.grid()
 # TODO DON'T REMOVE COMMAND/BUTTON IF YOU WANT IT TO STAY. DISABLE BUTTON, INSTEAD!
 # button.config(state=tk.DISABLED)
 
-
-pic = tk.PhotoImage(file="test_pic.png")
+pic = tk.PhotoImage(file="test_pic.gif")
 test_button = tk.Button(root, image=pic)
 test_button.grid()
 

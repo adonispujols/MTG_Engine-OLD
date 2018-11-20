@@ -62,9 +62,9 @@ class Game(tk.Frame):
     # main logic - init
     def _init_game(self):
         self.players[0].deck = deck.Deck()
-        self.players[0].hand = hand.Hand()
+        self.players[0].hand = hand.Hand(self, 1)
         self.players[1].deck = deck.Deck()
-        self.players[1].hand = hand.Hand()
+        self.players[1].hand = hand.Hand(self, 2)
         for i in range(10):
             self.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
             self.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))

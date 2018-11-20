@@ -28,12 +28,14 @@ class InPriority(State):
     def _init_gui(self):
         self._pass_button = tk.Button(self._game,
                                       text="pass", command=functools.partial(self._game.advance, event=ev.Events.PASS))
-        # self._pass_button = tk.Button(self._game,
-        #            text="play", command=functools.partial(self._game.advance, event=ev.Events.PASS))
 
     def run(self, _):
         # TODO recall: need to give AI options here and elsewhere
         self._pass_button.grid()
+        # XXX could be optimized
+        # for each button in hand, assign "play" command
+        self.buttons = []
+        for
 
     def next(self, event):
         self._pass_button.grid_remove()
@@ -57,7 +59,7 @@ class ChoosingStartingPlayer(State):
         # for user to choose (choose for ai in debug)
         for i in range(len(self._game.players)):
             choose_btn = tk.Button(self._game,
-                                   text=i, command=functools.partial(self._game.advance, message=i))
+                                   text=(i + 1), command=functools.partial(self._game.advance, message=i))
             self._choose_btns.append(choose_btn)
             choose_btn.grid()
         # TODO give AI ability to choose and add debug choice to override
