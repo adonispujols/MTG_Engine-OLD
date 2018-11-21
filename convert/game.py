@@ -1,4 +1,3 @@
-import tkinter as tk
 import typing
 from convert import stack
 from convert import hand
@@ -9,21 +8,15 @@ from convert import card as card_mod
 from convert import turn_parts as tp
 from convert import mana_types as mt
 from convert import states
-from convert import bindings as bnd
 
 
-class Game(tk.Frame):
+class Game:
     players: typing.List["player_mod.Player"]
     battlefield: typing.List[typing.List["card_mod.Card"]]
     step_or_phase: "tp.TurnParts"
-    current_state: "states.State"
+    _current_state: "states.State"
 
-    def __init__(self, parent=None):
-        # gui
-        super().__init__(parent)
-        self._parent = parent
-        self._init_gui()
-        # main logic
+    def __init__(self):
         self._debug = True
         self._ai_only = False
         self.players = [player_mod.Player(), player_mod.Player()]
@@ -33,7 +26,6 @@ class Game(tk.Frame):
         # initially none until 1st turn
         self.step_or_phase = None
         self._init_game()
-        # state machine
         self.in_priority = states.InPriority(self)
         self.playing_card = states.PlayingCard(self)
         self.on_untap = states.OnUntap(self)
@@ -53,23 +45,13 @@ class Game(tk.Frame):
             self.on_untap, self.on_upkeep, self.on_draw, self.on_precombat, self.on_begin_combat,
             self.on_declare_attackers, self.on_declare_blockers, self.on_first_strike_damage,
             self.on_combat_damage, self.on_end_combat, self.on_post_combat, self.on_end_step, self.on_cleanup)
-        self.current_state = states.ChoosingStartingPlayer(self)
+        self._current_state = states.ChoosingStartingPlayer(self)
 
-    # gui
-    def _init_gui(self):
-        self.grid()
-        self.bind(bnd.Bindings.ADVANCE.value, self.advance)
-        self._player_choosing_label = tk.Label(self)
-        self._player_choosing_label.grid()
-        self.step_or_phase_label = tk.Label(self)
-        self.step_or_phase_label.grid(row=0, column=2)
-
-    # main logic - init
     def _init_game(self):
         self.players[0].deck = deck.Deck()
-        self.players[0].hand = hand.Hand(self, 1)
+        self.players[0].hand = hand.Hand()
         self.players[1].deck = deck.Deck()
-        self.players[1].hand = hand.Hand(self, 2)
+        self.players[1].hand = hand.Hand()
         for i in range(20):
             self.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
             self.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))
@@ -82,19 +64,17 @@ class Game(tk.Frame):
         for player in self.players:
             player.deck.shuffle()
 
-    # state machine
-    def advance(self, _=None, event=None, message=None):
+    def advance(self, event=None, message=None):
         # with deck
         # print("State: {}\nP0 HAND:\n{}\nP0 DECK\n{}\nP1 HAND:\n{}\nP1 DECK".format(
-        #     self.current_state.__class__.__name__, self.players[0].hand, self.players[0].deck,
+        #     self._current_state.__class__.__name__, self.players[0].hand, self.players[0].deck,
         #     self.players[1].hand, self.players[1].deck))
         # just field
         print("STATE: {}\nP0 HAND:\n{}\nP0 FIELD:\n{}\nP1 HAND:\n{}\nP1 FIELD:\n{}".format(
-            self.current_state.__class__.__name__, self.players[0].hand, self.battlefield[0],
+            self._current_state.__class__.__name__, self.players[0].hand, self.battlefield[0],
             self.players[1].hand, self.battlefield[1]))
-        # _ = useless tk.Event
-        self.current_state = self.current_state.next(event)
-        self.current_state.run(message)
+        self._current_state = self._current_state.next(event)
+        self._current_state.run(message)
 
     # main logic
     def active_index(self):
@@ -121,13 +101,11 @@ class Game(tk.Frame):
         # TODO check for state based actions (perhaps make into separate state)
         self.in_priority.index = index
         # XXX can only play cards of player with priority
-        self.in_priority.card_buttons = self.players[index].hand.hand_buttons
         return self.in_priority
 
     def pass_priority(self, index):
         self._passes.inc()
         next_player = (index + 1) % len(self.players)
-        self._player_choosing_label.config(text=next_player)
         # TODO take into account actions + stack being empty.
         if self.players[next_player].active:
             if int(self._passes) == len(self.players):

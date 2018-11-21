@@ -1,12 +1,10 @@
-import tkinter as tk
 import abc
 import random
 import functools
 import typing
 from convert import game as game_mod
 from convert import turn_parts as tp
-from convert import bindings as bnd
-from convert import events as ev
+6from convert import events as ev
 from convert import hand as hand_mod
 
 class State(abc.ABC):
@@ -20,31 +18,14 @@ class State(abc.ABC):
 
 
 class InPriority(State):
-    card_buttons: typing.List["tk.Button"]
-
     def __init__(self, game: "game_mod.Game"):
         self._game = game
-        self._init_gui()
         self.index = None
-        self.card_buttons = None
-
-    def _init_gui(self):
-        self._pass_button = tk.Button(self._game,
-                                      text="pass", command=functools.partial(self._game.advance, event=ev.Events.PASS))
 
     def run(self, buttons_array):
         # TODO recall: need to give AI options here and elsewhere
-        self._pass_button.grid()
-        # XXX only passes hand index
-        for i, button in enumerate(self.card_buttons):
-            button.config(command=functools.partial(self._game.advance, event=ev.Events.PLAY, message=i))
-        for button in self.card_buttons:
-            button.config(state=tk.NORMAL)
 
     def next(self, event):
-        self._pass_button.grid_remove()
-        for button in self.card_buttons:
-            button.config(state=tk.DISABLED)
         if event == ev.Events.PASS:
             return self._game.pass_priority(self.index)
         elif event == ev.Events.PLAY:
@@ -89,7 +70,6 @@ class PlayingCard(State):
             self.hand.remove(card_index)
             self._game.battlefield[self.index].append(card)
             player.lands_played.inc()
-        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, event):
         # XXX assuming player who played the stuff had priority
