@@ -6,7 +6,7 @@ class Card:
         self.ability = "{T}: Add G"
 
     def __repr__(self):
-        return self._name
+        return "{} {}".format(self._name, "T" if self._tapped else "F")
 
     def tap(self):
         if self._tapped:

@@ -9,6 +9,7 @@ if __name__ == "__main__":
     # ^ needed to automatically bring tkinter window to front.
     root.lift()
     root.attributes('-topmost', True)
-    root.after_idle(root.attributes, '-topmost', False)
+    # XXX disabling here for easier debugging
+    # root.after_idle(root.attributes, '-topmost', False)
     root.after_idle(app.current_state.run, None)
     root.mainloop()

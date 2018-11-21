@@ -7,7 +7,7 @@ from convert import game as game_mod
 from convert import turn_parts as tp
 from convert import bindings as bnd
 from convert import events as ev
-
+from convert import hand as hand_mod
 
 class State(abc.ABC):
     @abc.abstractmethod
@@ -20,51 +20,107 @@ class State(abc.ABC):
 
 
 class InPriority(State):
+    card_buttons: typing.List["tk.Button"]
+
     def __init__(self, game: "game_mod.Game"):
         self._game = game
         self._init_gui()
         self.index = None
+        self.card_buttons = None
 
     def _init_gui(self):
         self._pass_button = tk.Button(self._game,
                                       text="pass", command=functools.partial(self._game.advance, event=ev.Events.PASS))
 
-    def run(self, _):
+    def run(self, buttons_array):
         # TODO recall: need to give AI options here and elsewhere
         self._pass_button.grid()
-        # XXX could be optimized
-        # for each button in hand, assign "play" command
-        self.buttons = []
-        for
+        # XXX only passes hand index
+        for i, button in enumerate(self.card_buttons):
+            button.config(command=functools.partial(self._game.advance, event=ev.Events.PLAY, message=i))
+        for button in self.card_buttons:
+            button.config(state=tk.NORMAL)
 
     def next(self, event):
         self._pass_button.grid_remove()
+        for button in self.card_buttons:
+            button.config(state=tk.DISABLED)
         if event == ev.Events.PASS:
             return self._game.pass_priority(self.index)
+        elif event == ev.Events.PLAY:
+            self._game.playing_card.hand = self._game.players[self.index].hand
+            self._game.playing_card.index = self.index
+            return self._game.playing_card
+
+
+class PlayingCard(State):
+    hand: "hand_mod.Hand"
+
+    def __init__(self, game: "game_mod.Game"):
+        self._game = game
+        self.hand = None
+        self.index = None
+
+#     def _play(self, zone, card_index, p_index, p):
+    #         card: "card_mod.Card" = zone.get(card_index)
+    #         active = p.active
+    #         if card.card_type == "Land":
+    #             self._play_land(card, zone, card_index, p_index, active, p.under_land_limit(), p.lands_played)
+    #         elif card.card_type == "Creature":
+    #             self._cast_creature(card, zone, card_index, active, p.mana_pool)
+    #     def _play_land(self, card, zone, card_index, player_index, active, under_land_limit, lands_played):
+    #         # TODO ensure [CR 305.2b] and [CR 305.3]; NO effect bypasses "play land" restrictions.
+    #         # ^ It's ok to increase max lands [CR 305.2], or "put" on battlefield [CR 305.4].
+    #         # [CR 115.2a].2
+    #         if self._met_land_restrictions(active, under_land_limit):
+    #             # [CR 115.2a].1
+    #             zone.remove(card_index)
+    #             self.battlefield[player_index].append(card)
+    #             lands_played.inc()
+    #     def _met_land_restrictions(self, active, under_land_limit):
+    #         return self._sorcery_speed(active) and under_land_limit
+    # XXX card index restricted to hand
+    # XXX many many other stuff missing
+    def run(self, card_index):
+        card = self.hand.get(card_index)
+        player = self._game.players[self.index]
+        # XXX this is just the "play land" code
+        if self._game._met_land_restrictions(player.active, player.under_land_limit()):
+            self.hand.remove(card_index)
+            self._game.battlefield[self.index].append(card)
+            player.lands_played.inc()
+        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+
+    def next(self, event):
+        # XXX assuming player who played the stuff had priority
+        return self._game.give_priority(self.index)
 
 
 class ChoosingStartingPlayer(State):
+    _player_label: "tk.Label"
     _choose_btns: typing.List["tk.Button"]
 
     def __init__(self, game: "game_mod.Game"):
         self._game = game
         self._choose_btns = []
+        self._player_label = None
 
     def run(self, _):
         # [CR 103.2]
         index = random.randrange(len(self._game.players))
-        player_label = tk.Label(self._game,
-                                text="P{}, who goes first?".format(index + 1))
-        player_label.grid()
+        self._player_label = tk.Label(self._game,
+                                text="P{}, who goes first?".format(index))
+        self._player_label.grid()
         # for user to choose (choose for ai in debug)
         for i in range(len(self._game.players)):
             choose_btn = tk.Button(self._game,
-                                   text=(i + 1), command=functools.partial(self._game.advance, message=i))
+                                   text=i, command=functools.partial(self._game.advance, message=i))
             self._choose_btns.append(choose_btn)
             choose_btn.grid()
         # TODO give AI ability to choose and add debug choice to override
 
     def next(self, _):
+        self._player_label.destroy()
         for btn in self._choose_btns:
             btn.destroy()
         self._choose_btns.clear()
@@ -83,6 +139,7 @@ class OnUntap(State):
 
     def run(self, starting_player):
         self._game.step_or_phase = tp.TurnParts.UNTAP
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         if self.first_untap:
             self._game.players[starting_player].make_active()
             self.first_untap = False
@@ -106,6 +163,7 @@ class OnUpkeep(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.UPKEEP
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -119,6 +177,7 @@ class OnDraw(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.DRAW
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.active_player().draw()
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
@@ -132,6 +191,7 @@ class OnPrecombat(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.PRECOMBAT_MAIN
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -144,6 +204,7 @@ class OnBeginCombat(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.BEGIN_COMBAT
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -157,6 +218,7 @@ class OnDeclareAttackers(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.DECLARE_ATTACKERS
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -169,6 +231,7 @@ class OnDeclareBlockers(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.DECLARE_BLOCKERS
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -182,6 +245,7 @@ class OnFirstStrikeDamage(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.FIRST_STRIKE_DAMAGE
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -194,6 +258,7 @@ class OnCombatDamage(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.COMBAT_DAMAGE
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -206,6 +271,7 @@ class OnEndCombat(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.END_COMBAT
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -218,6 +284,7 @@ class OnPostcombat(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.POSTCOMBAT_MAIN
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -230,6 +297,7 @@ class OnEndStep(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.END_STEP
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):
@@ -242,6 +310,7 @@ class OnCleanup(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.CLEANUP
+        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):

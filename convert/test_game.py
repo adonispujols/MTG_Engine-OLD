@@ -27,7 +27,7 @@ class TestGame(unittest.TestCase):
         self.assertTrue(self.app._debug)
         self.assertFalse(self.app._ai_only)
         # players
-        self.assertListEqual(self.app._battlefield, [[], []])
+        self.assertListEqual(self.app.battlefield, [[], []])
         self.assertListEqual(self.app._stack._stack, [])
         self.assertEqual(self.app._passes._count, 0)
         self.assertIsNone(self.app.step_or_phase)
@@ -44,7 +44,7 @@ class TestGame(unittest.TestCase):
         #             self.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
         #             self.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
         #         for _ in self.players:
-        #             self._battlefield.append([])
+        #             self.battlefield.append([])
         #         # [CR 103.1], 1st part of starting game
         #         for player in self.players:
         #             player.deck.shuffle()

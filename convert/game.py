@@ -14,7 +14,7 @@ from convert import bindings as bnd
 
 class Game(tk.Frame):
     players: typing.List["player_mod.Player"]
-    _battlefield: typing.List[typing.List["card_mod.Card"]]
+    battlefield: typing.List[typing.List["card_mod.Card"]]
     step_or_phase: "tp.TurnParts"
     current_state: "states.State"
 
@@ -27,13 +27,15 @@ class Game(tk.Frame):
         self._debug = True
         self._ai_only = False
         self.players = [player_mod.Player(), player_mod.Player()]
-        self._battlefield = []
+        self.battlefield = []
         self._stack = stack.Stack()
         self._passes = passes.Passes()
         # initially none until 1st turn
         self.step_or_phase = None
         self._init_game()
         # state machine
+        self.in_priority = states.InPriority(self)
+        self.playing_card = states.PlayingCard(self)
         self.on_untap = states.OnUntap(self)
         self.on_upkeep = states.OnUpkeep(self)
         self.on_draw = states.OnDraw(self)
@@ -47,7 +49,6 @@ class Game(tk.Frame):
         self.on_post_combat = states.OnPostcombat(self)
         self.on_end_step = states.OnEndStep(self)
         self.on_cleanup = states.OnCleanup(self)
-        self.in_priority = states.InPriority(self)
         self._ON_STEP_OR_PHASE_STATES = (
             self.on_untap, self.on_upkeep, self.on_draw, self.on_precombat, self.on_begin_combat,
             self.on_declare_attackers, self.on_declare_blockers, self.on_first_strike_damage,
@@ -58,6 +59,10 @@ class Game(tk.Frame):
     def _init_gui(self):
         self.grid()
         self.bind(bnd.Bindings.ADVANCE.value, self.advance)
+        self._player_choosing_label = tk.Label(self)
+        self._player_choosing_label.grid()
+        self.step_or_phase_label = tk.Label(self)
+        self.step_or_phase_label.grid(row=0, column=2)
 
     # main logic - init
     def _init_game(self):
@@ -65,21 +70,28 @@ class Game(tk.Frame):
         self.players[0].hand = hand.Hand(self, 1)
         self.players[1].deck = deck.Deck()
         self.players[1].hand = hand.Hand(self, 2)
-        for i in range(10):
+        for i in range(20):
             self.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
             self.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))
-        for i in range(10):
-            self.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
-            self.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
+        # for i in range(10):
+            # self.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
+            # self.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
         for _ in self.players:
-            self._battlefield.append([])
+            self.battlefield.append([])
         # [CR 103.1], 1st part of starting game
         for player in self.players:
             player.deck.shuffle()
 
     # state machine
     def advance(self, _=None, event=None, message=None):
-        print(self.current_state, self.step_or_phase)
+        # with deck
+        # print("State: {}\nP0 HAND:\n{}\nP0 DECK\n{}\nP1 HAND:\n{}\nP1 DECK".format(
+        #     self.current_state.__class__.__name__, self.players[0].hand, self.players[0].deck,
+        #     self.players[1].hand, self.players[1].deck))
+        # just field
+        print("STATE: {}\nP0 HAND:\n{}\nP0 FIELD:\n{}\nP1 HAND:\n{}\nP1 FIELD:\n{}".format(
+            self.current_state.__class__.__name__, self.players[0].hand, self.battlefield[0],
+            self.players[1].hand, self.battlefield[1]))
         # _ = useless tk.Event
         self.current_state = self.current_state.next(event)
         self.current_state.run(message)
@@ -94,7 +106,7 @@ class Game(tk.Frame):
         return self.players[self.active_index()]
 
     def untap_all_of_active(self):
-        for card in self._battlefield[self.active_index()]:
+        for card in self.battlefield[self.active_index()]:
             card.untap()
 
     def reset_lands_played(self):
@@ -108,11 +120,14 @@ class Game(tk.Frame):
     def give_priority(self, index):
         # TODO check for state based actions (perhaps make into separate state)
         self.in_priority.index = index
+        # XXX can only play cards of player with priority
+        self.in_priority.card_buttons = self.players[index].hand.hand_buttons
         return self.in_priority
 
     def pass_priority(self, index):
         self._passes.inc()
         next_player = (index + 1) % len(self.players)
+        self._player_choosing_label.config(text=next_player)
         # TODO take into account actions + stack being empty.
         if self.players[next_player].active:
             if int(self._passes) == len(self.players):
@@ -159,13 +174,13 @@ class Game(tk.Frame):
     #                     print("ERROR: Need 1 player # parameter, given 0")
     #                 else:
     #                     card_index -= 1
-    #                     p_field = self._battlefield[index]
+    #                     p_field = self.battlefield[index]
     #                     if 0 <= card_index < len(p_field):
     #                         self._activate(p_field, card_index, self.players[index].mana_pool)
     #                     else:
     #                         print("ERROR: Invalid card #")
     #             elif choice[0] == "field":
-    #                 print_u.print_field(self._battlefield)
+    #                 print_u.print_field(self.battlefield)
     #             elif self._debug:
     #                 if choice[0] == "hand":
     #                     try:
@@ -265,7 +280,7 @@ class Game(tk.Frame):
         if self._met_land_restrictions(active, under_land_limit):
             # [CR 115.2a].1
             zone.remove(card_index)
-            self._battlefield[player_index].append(card)
+            self.battlefield[player_index].append(card)
             lands_played.inc()
 
     # noinspection PyMethodMayBeStatic
