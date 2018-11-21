@@ -4,7 +4,7 @@ import functools
 import typing
 from convert import game as game_mod
 from convert import turn_parts as tp
-6from convert import events as ev
+from convert import events as ev
 from convert import hand as hand_mod
 
 class State(abc.ABC):
@@ -77,27 +77,15 @@ class PlayingCard(State):
 
 
 class ChoosingStartingPlayer(State):
-    _player_label: "tk.Label"
-    _choose_btns: typing.List["tk.Button"]
-
     def __init__(self, game: "game_mod.Game"):
         self._game = game
-        self._choose_btns = []
-        self._player_label = None
 
     def run(self, _):
         # [CR 103.2]
         index = random.randrange(len(self._game.players))
-        self._player_label = tk.Label(self._game,
-                                text="P{}, who goes first?".format(index))
-        self._player_label.grid()
-        # for user to choose (choose for ai in debug)
-        for i in range(len(self._game.players)):
-            choose_btn = tk.Button(self._game,
-                                   text=i, command=functools.partial(self._game.advance, message=i))
-            self._choose_btns.append(choose_btn)
-            choose_btn.grid()
-        # TODO give AI ability to choose and add debug choice to override
+        # TODO give AI ability to choose and actually check if debug choice to override
+        # tell gui to put in input OR just have AI process
+
 
     def next(self, _):
         self._player_label.destroy()

@@ -16,7 +16,8 @@ class Game:
     step_or_phase: "tp.TurnParts"
     _current_state: "states.State"
 
-    def __init__(self):
+    def __init__(self, sign):
+        self.signals =
         self._debug = True
         self._ai_only = False
         self.players = [player_mod.Player(), player_mod.Player()]
@@ -46,6 +47,7 @@ class Game:
             self.on_declare_attackers, self.on_declare_blockers, self.on_first_strike_damage,
             self.on_combat_damage, self.on_end_combat, self.on_post_combat, self.on_end_step, self.on_cleanup)
         self._current_state = states.ChoosingStartingPlayer(self)
+        self._current_state.run()
 
     def _init_game(self):
         self.players[0].deck = deck.Deck()
