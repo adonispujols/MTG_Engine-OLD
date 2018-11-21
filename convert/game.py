@@ -1,4 +1,5 @@
 import typing
+import collections
 from convert import stack
 from convert import hand
 from convert import passes
@@ -16,8 +17,8 @@ class Game:
     step_or_phase: "tp.TurnParts"
     _current_state: "states.State"
 
-    def __init__(self, sign):
-        self.signals =
+    def __init__(self, signals: collections.deque):
+        self.signals = signals
         self._debug = True
         self._ai_only = False
         self.players = [player_mod.Player(), player_mod.Player()]

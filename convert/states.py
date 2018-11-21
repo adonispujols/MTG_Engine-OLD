@@ -6,6 +6,7 @@ from convert import game as game_mod
 from convert import turn_parts as tp
 from convert import events as ev
 from convert import hand as hand_mod
+from convert import signals_enum as sgn
 
 class State(abc.ABC):
     @abc.abstractmethod
@@ -79,12 +80,13 @@ class PlayingCard(State):
 class ChoosingStartingPlayer(State):
     def __init__(self, game: "game_mod.Game"):
         self._game = game
+        self._signals = game.signals
 
     def run(self, _):
         # [CR 103.2]
         index = random.randrange(len(self._game.players))
         # TODO give AI ability to choose and actually check if debug choice to override
-        # tell gui to put in input OR just have AI process
+        self._signals.append(sgn.Signals.CHOOSE_FIRST)
 
 
     def next(self, _):
