@@ -1,16 +1,14 @@
 import abc
 import random
-import functools
-import typing
 from convert import game as game_mod
 from convert import turn_parts as tp
 from convert import events as ev
 from convert import hand as hand_mod
-from convert import signals_enum as sgn
+from convert import signal_classes as sgn
 
 class State(abc.ABC):
     @abc.abstractmethod
-    def run(self, message):
+    def run(self):
         pass
 
     @abc.abstractmethod
@@ -86,7 +84,7 @@ class ChoosingStartingPlayer(State):
         # [CR 103.2]
         index = random.randrange(len(self._game.players))
         # TODO give AI ability to choose and actually check if debug choice to override
-        self._signals.append(sgn.Signals.CHOOSE_FIRST)
+        self._signals.append(sgn.ChooseStartingPlayer(index))
 
 
     def next(self, _):
