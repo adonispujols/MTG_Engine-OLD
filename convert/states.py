@@ -80,23 +80,20 @@ class ChoosingStartingPlayer(State):
         self._game = game
         self._signals = game.signals
 
-    def run(self, _):
+    def run(self):
         # [CR 103.2]
         index = random.randrange(len(self._game.players))
         # TODO give AI ability to choose and actually check if debug choice to override
         self._signals.append(sgn.ChooseStartingPlayer(index))
 
 
-    def next(self, _):
-        self._player_label.destroy()
-        for btn in self._choose_btns:
-            btn.destroy()
-        self._choose_btns.clear()
+    def next(self, starting_player):
         # [CR 103.4]
         for player in self._game.players:
             for _ in range(player.max_hand_size):
                 player.draw()
         # [CR 103.7]
+        self._game.on_untap.starting_player = starting_player
         return self._game.on_untap
 
 
@@ -104,12 +101,12 @@ class OnUntap(State):
     def __init__(self, game: "game_mod.Game"):
         self._game = game
         self.first_untap = True
+        self.starting_player = None
 
-    def run(self, starting_player):
+    def run(self):
         self._game.step_or_phase = tp.TurnParts.UNTAP
-        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         if self.first_untap:
-            self._game.players[starting_player].make_active()
+            self._game.players[self.starting_player].make_active()
             self.first_untap = False
         else:
             prev_active = self._game.active_index()
@@ -119,7 +116,9 @@ class OnUntap(State):
         self._game.reset_lands_played()
         self._game.untap_all_of_active()
         self._game.empty_mana_pools()
-        self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
+        # TODO we only advance IF there's no choices to be made (winter orb)
+        # ^ We'll have to give user chance to choose
+        self._game.advance()
 
     def next(self, _):
         return self._game.on_upkeep
@@ -131,7 +130,6 @@ class OnUpkeep(State):
 
     def run(self, _):
         self._game.step_or_phase = tp.TurnParts.UPKEEP
-        self._game.step_or_phase_label.config(text=self._game.step_or_phase.name)
         self._game.event_generate(bnd.Bindings.ADVANCE.value, when="tail")
 
     def next(self, _):

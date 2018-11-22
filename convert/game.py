@@ -67,7 +67,7 @@ class Game:
         for player in self.players:
             player.deck.shuffle()
 
-    def advance(self, event=None, message=None):
+    def advance(self, event=None):
         # with deck
         # print("State: {}\nP0 HAND:\n{}\nP0 DECK\n{}\nP1 HAND:\n{}\nP1 DECK".format(
         #     self._current_state.__class__.__name__, self.players[0].hand, self.players[0].deck,
@@ -77,7 +77,7 @@ class Game:
             self._current_state.__class__.__name__, self.players[0].hand, self.battlefield[0],
             self.players[1].hand, self.battlefield[1]))
         self._current_state = self._current_state.next(event)
-        self._current_state.run(message)
+        self._current_state.run()
 
     # main logic
     def active_index(self):
