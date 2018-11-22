@@ -8,7 +8,7 @@ def first_untap_of_game(game: "game_mod.Game", first_player):
     game.players[first_player].make_active()
     print("Active Player:", first_player + 1)
     game.reset_lands_played()
-    # TBA = "Turn-Based Action", SBA = "State-Based Action"
+    # TBA = "Turn-Based Action", SBA = "State-Based Action" 
     print("TBA: Active untaps all")
     game.untap_all_of_active()
     game.empty_mana_pools()
