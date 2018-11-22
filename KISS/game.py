@@ -1,6 +1,5 @@
 import typing
 import collections
-import random
 from convert import stack
 from convert import hand
 from convert import passes
@@ -10,7 +9,6 @@ from convert import card as card_mod
 from convert import turn_parts as tp
 from convert import mana_types as mt
 from convert import states
-from convert import signal_classes as sgn
 
 
 class Game:
@@ -20,7 +18,7 @@ class Game:
     _current_state: "states.State"
 
     def __init__(self, signals: collections.deque):
-        self._signals = signals
+        self.signals = signals
         self._debug = True
         self._ai_only = False
         self.players = [player_mod.Player(), player_mod.Player()]
@@ -30,7 +28,6 @@ class Game:
         # initially none until 1st turn
         self.step_or_phase = None
         self._init_game()
-        self._start_game()
         self.in_priority = states.InPriority(self)
         self.playing_card = states.PlayingCard(self)
         self.on_untap = states.OnUntap(self)
@@ -58,32 +55,17 @@ class Game:
         self.players[0].hand = hand.Hand()
         self.players[1].deck = deck.Deck()
         self.players[1].hand = hand.Hand()
-        for i in range(10):
+        for i in range(20):
             self.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
             self.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))
-        for i in range(10):
-            self.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
-            self.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
+        # for i in range(10):
+            # self.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
+            # self.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
         for _ in self.players:
             self.battlefield.append([])
-
-    # Actually start the game per the rules
-    def _start_game(self):
         # [CR 103.1], 1st part of starting game
         for player in self.players:
             player.deck.shuffle()
-        # [CR 103.2]
-        index = random.randrange(len(self.players))
-        # TODO give AI ability to choose and actually check if debug choice to override
-        self._signals.append(sgn.ChooseStartingPlayer(index))
-        # tech we aren't supposed to move forward until that choice is made
-        # we could ahve gui call start_game_part_2(index)
-        # [CR 103.4]
-        for player in self.players:
-            for _ in range(player.max_hand_size):
-                player.draw()
-        # [CR 103.7]
-        # rely on gui to call first untap of game
 
     def advance(self, event=None):
         # with deck
