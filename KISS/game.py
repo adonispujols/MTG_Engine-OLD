@@ -264,7 +264,6 @@ class Game:
             self.battlefield[player_index].append(card)
             lands_played.inc()
 
-    # noinspection PyMethodMayBeStatic
     def _activate(self, zone, card_index, mana_pool):
         # TODO [CR 605.3c] mana ability must resolve completely before activating it again
         card: "card_mod.Card" = zone[card_index]
