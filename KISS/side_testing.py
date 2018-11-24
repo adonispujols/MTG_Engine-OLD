@@ -320,92 +320,163 @@
 
 # threading with dead frame optimization
 
-import threading
-import collections
-import functools as ft
-
-
-class Game:
-    def __init__(self):
-        self.input_ = None
-
-    def internal_loop(self):
-        current_func = self.start_game()
-        while True:
-            current_func = current_func()
-
-    def un_block(self, given_input_):
-        self.input_ = given_input_
-        event.set()
-
-    def start_game(self):
-            # blah blah
-            starting_player = self.choose_next()
-            # more start game stuff
-            return ft.partial(self.first_untap)
-
-    def choose_next(self):
-        signals.append("<Simulating signal>")
-        event.wait()
-        return self.input_
-
-    def first_untap(self):
-        return ft.partial(self.upkeep)
-
-    def upkeep(self):
-        return ft.partial(self.in_priority)
-
-    def in_priority(self):
-        return ft.partial(self.pass_priority)
-
-    def pass_priority(self):
-        return ft.partial(self.give_priority)
-
-    def give_priority(self):
-        return ft.partial(self.in_priority)
-
-
-def run_game():
-    game.internal_loop()
-
-
-event = threading.Event()
-signals = collections.deque()
-game = Game()
-thread = threading.Thread(target=run_game)
-thread.start()
-
-while True:
-    if signals:
-        print(signals.popleft())
-        input_ = input("<Dialog that corresponds to signal>: ")
-        game.un_block(input_)
-        break
+# import threading
+# import collections
+# import functools as ft
+#
+#
+# class Game:
+#     def __init__(self):
+#         self.input_ = None
+#
+#     def internal_loop(self):
+#         current_func = self.start_game()
+#         while True:
+#             current_func = current_func()
+#
+#     def un_block(self, given_input_):
+#         self.input_ = given_input_
+#         event.set()
+#
+#     def start_game(self):
+#             # blah blah
+#             # noinspection PyUnusedLocal
+#             starting_player = self.choose_next()
+#             # more start game stuff
+#             return ft.partial(self.first_untap)
+#
+#     def choose_next(self):
+#         signals.append("<Simulating signal>")
+#         event.wait()
+#         return self.input_
+#
+#     def first_untap(self):
+#         return ft.partial(self.upkeep)
+#
+#     def upkeep(self):
+#         return ft.partial(self.in_priority)
+#
+#     def in_priority(self):
+#         return ft.partial(self.pass_priority)
+#
+#     def pass_priority(self):
+#         return ft.partial(self.give_priority)
+#
+#     def give_priority(self):
+#         return ft.partial(self.in_priority)
+#
+#
+# def run_game():
+#     game.internal_loop()
+#
+#
+# event = threading.Event()
+# signals = collections.deque()
+# game = Game()
+# thread = threading.Thread(target=run_game)
+# thread.start()
+#
+# while True:
+#     if signals:
+#         print(signals.popleft())
+#         input_ = input("<Dialog that corresponds to signal>: ")
+#         game.un_block(input_)
+#         break
 
 # version using func to process + optional context (func to call next)
+# TODO THIS VERSION DOES NOT EXPLICITLY CONTROL CALL FRAMES!
+# ^ MAKE SURE NOOOO FUNCTION IS RECURSIVELY CALLED BEFORE STATE REACHED!
+
+import abc
+
+
+class State(abc.ABC):
+    @abc.abstractmethod
+    def process(self, event):
+        pass
+
+
+class ChoosePlayer(State):
+    def __init__(self, context):
+        # send signal to gui
+        self.context = context
+
+    def process(self, event):
+        self.context(event)
+
+
+class InPriority(State):
+    def __init__(self, game_):
+        # send signal to gui
+        self.game = game_
+
+    def process(self, event):
+        self.game.pass_priority()
 
 
 class Game:
+    state: State
+
+    def __init__(self):
+        self.state = None
+
+    def on_input(self, input_):
+        self.state.process(input_)
+
     def start_game(self):
         # blah blah
-        # get starting player input
-        # more start game stuff
-        pass
+        self.state = ChoosePlayer(self.start_game_part_2)
 
-    def choose_next(self):
-        pass
+    # noinspection PyUnusedLocal
+    def start_game_part_2(self, player_chosen):
+        # more start game stuff
+        self.first_untap()
 
     def first_untap(self):
-        pass
+        self.upkeep()
 
     def upkeep(self):
-        pass
-
-    def in_priority(self):
-        pass
-
-    def pass_priority(self):
-        pass
+        self.give_priority()
 
     def give_priority(self):
-        pass
+        self.state = InPriority(self)
+
+    def pass_priority(self):
+        self.give_priority()
+
+
+# TODO REDUCE DEAD FRAMES!!!!
+# ^ make quote that when we optimize we'll deal with it
+# For now make important TODO for making sure no infinite recursion
+# ^ like what happened originally
+# ^ ensure same function is NEVER recursivly called
+# ^ some languages have tail call optimization, so we don't haVe to worry
+# ^- (unless making cross compiler compatible)
+# TODO note some lang have tail call opt (know how to tap into) and no worry (if set up right)
+# ^ IF OPTIMIZATION FLAGS ARE ON FOR COMPILING!
+# ^ WHICH MEANS WE CANT DO IF WANTING TO MAKE CROSS PLATFORM
+# ^ BIG OOF TO MENTION!
+# TODO note we should make sure if ANY function where to be called again before previous finishes
+# we should have that be a state (or put in a queue or soemthing) and processed immediately
+# ^ transient.
+#  most likely you won't have to.
+# queue?
+# TODO make note about simplicity and/or performance boost from recreating objects during run
+# ^ could create function like choose_player, taking needed params for object
+# ^ we'll haave code for that in two different places AND requiring any update on object
+# ^ to reflect chnge in wrapper
+# TODO could reqquire locks on input (only accept when game allows)
+# ^ ultimately up to gui to understand we only accet ONE input call per EACH signal!
+# ^ but good side goal
+# TODO put init on differnet prt of code?
+# TODO natural/more intuitive way of forcing subclasses to have X?
+# TODO how to force subclasses to init n object (signal?)
+# TODO use keyword args for many params?
+# TODO better description of constants SPECIFICALLY for each instance (not shared throughout)
+# ^ https://stackoverflow.com/questions/1527395/constant-instance-variables
+# ^ These guys suggest forcibly using property to avoid set
+# ^ Well, if they should never logically be changed, then we should never logically change them
+game = Game()
+game.start_game()
+game.on_input("test")
+game.on_input("test 2")

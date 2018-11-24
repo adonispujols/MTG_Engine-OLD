@@ -1,7 +1,7 @@
-from convert import hand
-from convert import mana_pool
-from convert import lands_played as lp
-from convert import deck
+from KISS import hand
+from KISS import mana_pool
+from KISS import lands_played as lp
+from KISS import deck
 
 
 class Player:

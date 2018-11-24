@@ -1,10 +1,10 @@
 # dummy for type checking
 class Signal:
-    NAME = None
+    def __init__(self, name):
+        self.name = name
 
 
-class ChooseStartingPlayer(Signal):
-    NAME = "ChooseStartingPlayer"
-
+class ChoosePlayer(Signal):
     def __init__(self, index):
+        super().__init__("ChoosePlayer")
         self.index = index

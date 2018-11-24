@@ -1,14 +1,15 @@
 import typing
 import collections
-from convert import stack
-from convert import hand
-from convert import passes
-from convert import deck
-from convert import player as player_mod
-from convert import card as card_mod
-from convert import turn_parts as tp
-from convert import mana_types as mt
-from convert import states
+from KISS import stack
+from KISS import hand
+from KISS import passes
+from KISS import deck
+from KISS import player as player_mod
+from KISS import card as card_mod
+from KISS import turn_parts as tp
+from KISS import turn_actions
+from KISS import mana_types as mt
+from KISS import states
 
 
 class Game:
@@ -27,30 +28,7 @@ class Game:
         self._passes = passes.Passes()
         # initially none until 1st turn
         self.step_or_phase = None
-        self._init_game()
-        self.in_priority = states.InPriority(self)
-        self.playing_card = states.PlayingCard(self)
-        self.on_untap = states.OnUntap(self)
-        self.on_upkeep = states.OnUpkeep(self)
-        self.on_draw = states.OnDraw(self)
-        self.on_precombat = states.OnPrecombat(self)
-        self.on_begin_combat = states.OnBeginCombat(self)
-        self.on_declare_attackers = states.OnDeclareAttackers(self)
-        self.on_declare_blockers = states.OnDeclareBlockers(self)
-        self.on_first_strike_damage = states.OnFirstStrikeDamage(self)
-        self.on_combat_damage = states.OnCombatDamage(self)
-        self.on_end_combat = states.OnEndCombat(self)
-        self.on_post_combat = states.OnPostcombat(self)
-        self.on_end_step = states.OnEndStep(self)
-        self.on_cleanup = states.OnCleanup(self)
-        self._ON_STEP_OR_PHASE_STATES = (
-            self.on_untap, self.on_upkeep, self.on_draw, self.on_precombat, self.on_begin_combat,
-            self.on_declare_attackers, self.on_declare_blockers, self.on_first_strike_damage,
-            self.on_combat_damage, self.on_end_combat, self.on_post_combat, self.on_end_step, self.on_cleanup)
-        self._current_state = states.ChoosingStartingPlayer(self)
-        self._current_state.run()
-
-    def _init_game(self):
+        self.state = None
         self.players[0].deck = deck.Deck()
         self.players[0].hand = hand.Hand()
         self.players[1].deck = deck.Deck()
@@ -59,13 +37,25 @@ class Game:
             self.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
             self.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))
         # for i in range(10):
-            # self.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
-            # self.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
+        #     self.players[0].deck.push(card_mod.Card("creat_1 " + str(i), "Creature"))
+        #     self.players[1].deck.push(card_mod.Card("creat_2 " + str(i), "Creature"))
         for _ in self.players:
             self.battlefield.append([])
+
+    def start_game(self):
         # [CR 103.1], 1st part of starting game
         for player in self.players:
             player.deck.shuffle()
+        # [CR 103.2]
+        self.state = states.ChoosingPlayer(self.finish_starting)
+
+    def finish_starting(self, starting_player):
+        # [CR 103.4]
+        for player in self.players:
+            for _ in range(player.max_hand_size):
+                player.draw()
+        # [CR 103.7]
+        turn_actions.first_untap(self, starting_player)
 
     def advance(self, event=None):
         # with deck
@@ -73,9 +63,9 @@ class Game:
         #     self._current_state.__class__.__name__, self.players[0].hand, self.players[0].deck,
         #     self.players[1].hand, self.players[1].deck))
         # just field
-        print("STATE: {}\nP0 HAND:\n{}\nP0 FIELD:\n{}\nP1 HAND:\n{}\nP1 FIELD:\n{}".format(
-            self._current_state.__class__.__name__, self.players[0].hand, self.battlefield[0],
-            self.players[1].hand, self.battlefield[1]))
+        # print("STATE: {}\nP0 HAND:\n{}\nP0 FIELD:\n{}\nP1 HAND:\n{}\nP1 FIELD:\n{}".format(
+        #     self._current_state.__class__.__name__, self.players[0].hand, self.battlefield[0],
+        #     self.players[1].hand, self.battlefield[1]))
         self._current_state = self._current_state.next(event)
         self._current_state.run()
 

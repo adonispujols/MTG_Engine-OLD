@@ -1,10 +1,11 @@
 import abc
 import random
-from convert import game as game_mod
-from convert import turn_parts as tp
-from convert import events as ev
-from convert import hand as hand_mod
-from convert import signal_classes as sgn
+import collections
+from KISS import game as game_mod
+from KISS import turn_parts as tp
+from KISS import events as ev
+from KISS import hand as hand_mod
+from KISS import signal_classes as sgn
 
 class State(abc.ABC):
     @abc.abstractmethod
@@ -75,26 +76,44 @@ class PlayingCard(State):
         return self._game.give_priority(self.index)
 
 
-class ChoosingStartingPlayer(State):
-    def __init__(self, game: "game_mod.Game"):
-        self._game = game
-        self._signals = game.signals
+class State(abc.ABC):
+    def __init__(self, signals: collections.deque, signal):
+        signals.append(signal)
 
-    def run(self):
-        # [CR 103.2]
-        index = random.randrange(len(self._game.players))
-        # TODO give AI ability to choose and actually check if debug choice to override
-        self._signals.append(sgn.ChooseStartingPlayer(index))
+    @abc.abstractmethod
+    def process(self, event):
+        pass
 
 
-    def next(self, starting_player):
-        # [CR 103.4]
-        for player in self._game.players:
-            for _ in range(player.max_hand_size):
-                player.draw()
-        # [CR 103.7]
-        self._game.on_untap.starting_player = starting_player
-        return self._game.on_untap
+class ChoosingPlayer(State):
+    def __init__(self, signals, context):
+        super().__init__(signals, sgn.ChoosePlayer)
+        self._context = context
+
+    def process(self, event):
+        self._context(event)
+
+
+# class ChoosingStartingPlayer(State):
+#     def __init__(self, game: "game_mod.Game"):
+#         self._game = game
+#         self._signals = game.signals
+#
+#     def run(self):
+#         # [CR 103.2]
+#         index = random.randrange(len(self._game.players))
+#         # TODO give AI ability to choose and actually check if debug choice to override
+#         self._signals.append(sgn.ChooseStartingPlayer(index))
+#
+#
+#     def next(self, starting_player):
+#         # [CR 103.4]
+#         for player in self._game.players:
+#             for _ in range(player.max_hand_size):
+#                 player.draw()
+#         # [CR 103.7]
+#         self._game.on_untap.starting_player = starting_player
+#         return self._game.on_untap
 
 
 class OnUntap(State):
