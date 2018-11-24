@@ -160,7 +160,7 @@ class Game:
     #                     card_index -= 1
     #                     p = self.players[index]
     #                     if 0 <= card_index < p.hand.size():
-    #                         self._play(p.hand, card_index, index, p)
+    #                         self.play(p.hand, card_index, index, p)
     #                     else:
     #                         print("ERROR: Invalid card #")
     #             elif choice[0] == "act":

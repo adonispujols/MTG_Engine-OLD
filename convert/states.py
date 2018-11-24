@@ -41,7 +41,7 @@ class PlayingCard(State):
         self.hand = None
         self.index = None
 
-#     def _play(self, zone, card_index, p_index, p):
+#     def play(self, zone, card_index, p_index, p):
     #         card: "card_mod.Card" = zone.get(card_index)
     #         active = p.active
     #         if card.card_type == "Land":

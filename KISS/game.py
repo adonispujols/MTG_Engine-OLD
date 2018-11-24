@@ -26,7 +26,6 @@ class Game:
         self.battlefield = []
         self._stack = stack.Stack()
         self._passes = passes.Passes()
-        # initially none until 1st turn
         self.step_or_phase = None
         self.state = None
         self.players[0].deck = deck.Deck()
@@ -58,15 +57,16 @@ class Game:
         turn_actions.first_untap(self, starting_player)
 
     def advance(self, event):
-        # with deck
-        # print("State: {}\nP0 HAND:\n{}\nP0 DECK\n{}\nP1 HAND:\n{}\nP1 DECK".format(
-        #     self._current_state.__class__.__name__, self.players[0].hand, self.players[0].deck,
-        #     self.players[1].hand, self.players[1].deck))
-        # just field
-        # print("STATE: {}\nP0 HAND:\n{}\nP0 FIELD:\n{}\nP1 HAND:\n{}\nP1 FIELD:\n{}".format(
-        #     self._current_state.__class__.__name__, self.players[0].hand, self.battlefield[0],
-        #     self.players[1].hand, self.battlefield[1]))
         self.state.process(event)
+        # debug helper
+        print("STATE: {}\nSTEP/PHASE: {}\nP0 HAND:\n{}\nP0 FIELD:\n{}\nP1 HAND:\n{}\nP1 FIELD:\n{}".format(
+            self.state.__class__.__name__, self.step_or_phase.name, self.players[0].hand, self.battlefield[0],
+            self.players[1].hand, self.battlefield[1]))
+        if isinstance(self.state, states.InPriority):
+            # noinspection PyUnresolvedReferences
+            print("P w/ Priority: ", self.state._index)
+        # XXX consider using repr/to string or so instead of checking instance or so
+        # ^ more control. No need for ==. Just put index in repr
             
     def active_index(self):
         for i, player in enumerate(self.players):
@@ -90,7 +90,8 @@ class Game:
 
     def give_priority(self, index):
         # TODO check for state based actions (perhaps make into separate state)
-        self.state = states.InPriority(self.signals, self, index)
+        # self.state = states.InPriority(self.signals, self, index)
+        self.state = states.InPriority
 
     def pass_priority(self, index):
         self._passes.inc()
@@ -102,80 +103,7 @@ class Game:
                 self.empty_mana_pools()
                 turn_actions.start_next_step_or_phase(self, self.step_or_phase)
             self._passes.reset()
-        self.give_priority(index)
-
-    # def give_player_priority(self, index):
-    #     def user_has_priority():
-    #         while True:
-    #             choice = input(print_u.player_prompt(index, self.players[index])).split()
-    #             # TODO Include more general options for player (regardless of priority)
-    #             # ^ such as simply looking at board state
-    #             if not choice:
-    #                 self._pass_priority(index)
-    #                 break
-    #             # TODO implement user-limited commands
-    #             elif choice[0] == "play":
-    #                 # TODO support playing from other zones
-    #                 try:
-    #                     card_index = int(choice[1])
-    #                 except ValueError:
-    #                     print("ERROR: Invalid integer")
-    #                 except IndexError:
-    #                     print("ERROR: Need 1 player # parameter, given 0")
-    #                 else:
-    #                     card_index -= 1
-    #                     p = self.players[index]
-    #                     if 0 <= card_index < p.hand.size():
-    #                         self._play(p.hand, card_index, index, p)
-    #                     else:
-    #                         print("ERROR: Invalid card #")
-    #             elif choice[0] == "act":
-    #                 # TODO support for activating from other zones
-    #                 try:
-    #                     card_index = int(choice[1])
-    #                 except ValueError:
-    #                     print("ERROR: Invalid integer")
-    #                 except IndexError:
-    #                     print("ERROR: Need 1 player # parameter, given 0")
-    #                 else:
-    #                     card_index -= 1
-    #                     p_field = self.battlefield[index]
-    #                     if 0 <= card_index < len(p_field):
-    #                         self._activate(p_field, card_index, self.players[index].mana_pool)
-    #                     else:
-    #                         print("ERROR: Invalid card #")
-    #             elif choice[0] == "field":
-    #                 print_u.print_field(self.battlefield)
-    #             elif self._debug:
-    #                 if choice[0] == "hand":
-    #                     try:
-    #                         p_index = int(choice[1])
-    #                     except ValueError:
-    #                         print("ERROR: Invalid integer")
-    #                     except IndexError:
-    #                         print("ERROR: Need 1 player # parameter, given 0")
-    #                     else:
-    #                         p_index -= 1
-    #                         if 0 <= p_index < len(self.players):
-    #                             print_u.print_hand(p_index, self.players[p_index])
-    #                         else:
-    #                             print("ERROR: Invalid player #")
-    #                 else:
-    #                     print("ERROR: Invalid input")
-    #             else:
-    #                 print("ERROR: Invalid input")
-    #     if index == 0:
-    #         if not self._ai_only:
-    #             user_has_priority()
-    #         else:
-    #             # TODO continue adding AI options in future!
-    #             # ai is making choice
-    #             pass
-    #     else:
-    #         if self._debug:
-    #             user_has_priority()
-    #         else:
-    #             pass
+        self.give_priority(next_player)
 
     def _in_main_phase(self):
         return (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
@@ -191,27 +119,35 @@ class Game:
         # [CR 302.1].?
         return self._sorcery_speed(active)
 
-    def _play(self, zone, card_index, p_index, p):
+    # XXX have zone/index in zone be in card?
+    # ^ Makes it easier for us to just pass the card itself, but may be more complicated...
+    def play(self, zone, card_index, p_index):
         card: "card_mod.Card" = zone.get(card_index)
-        active = p.active
+        player: "player_mod.Player" = self.players[p_index]
         if card.card_type == "Land":
-            self._play_land(card, zone, card_index, p_index, active, p.under_land_limit(), p.lands_played)
+            self._play_land(card, zone, card_index, p_index, player)
         elif card.card_type == "Creature":
-            self._cast_creature(card, zone, card_index, active, p.mana_pool)
+            self._cast_creature(card, zone, card_index, player)
 
-    def _cast_creature(self, card, zone, card_index, active, mana_pool):
+    def _cast_creature(self, card, zone, card_index, player):
         # TODO [CR 601.3a] to [CR 601.3b] (exceptions to casting restrictions)
-        # TODO check for legality at [CR 601.2e], not before!
+        # TODO check for legality at [CR 601.2e], not before! <- We kinda have this going.
         # XXX can add somewhat-accurate hints (warn sorcery/instant, etc), but
         # - allow user to try (until completely accurate).
         # TODO deque for actions (resolve as queue, undo as stack)
         # ^ Try bluff (no-sde effect) payments, "undo" by doing reverse, and then
         # "do real" in queue order once all costs are payed.
+        # [CR 601.2a]
+        zone.remove(card_index)
+        self._stack.push(card)
         # [CR 601.2e]
-        if self._met_creature_restrictions(active):
-            # [CR 601.2a]
-            zone.remove(card_index)
-            self._stack.push(card)
+        if self._met_creature_restrictions(player.active):
+            # TODO PAYING COSTS STATE!!!!!!!!!
+            # TODO PAYING COSTS STATE!!!!!!!!!
+            # TODO PAYING COSTS STATE!!!!!!!!!
+            # TODO GETTING PRIORITY BACK!!!!!!
+            # TODO GETTING PRIORITY BACK!!!!!!
+            # TODO GETTING PRIORITY BACK!!!!!!
             # TODO [601.2g] only part where mana abilities may be activated during cast/act
             # [CR 601.2h] paying total cost
             generic_cost = 1
@@ -223,7 +159,7 @@ class Game:
                 except KeyError:
                     print("ERROR: Invalid input")
                 else:
-                    if mana_pool.remove(mana_payed):
+                    if player.mana_pool.remove(mana_payed):
                         if (mana_payed in specific_types) and (specific_types[mana_payed] > 0):
                             specific_types[mana_payed] -= 1
                         elif generic_cost > 0:
@@ -237,18 +173,24 @@ class Game:
                     else:
                         print("ERROR: You can't pay that mana.")
             # [CR 601.2i] successfully cast
+        else:
+            raise ValueError("ILLEGAL ACTION: Casting spell without proper timing")
+        # TODO [CR 116.3c] receive priority after cast/act/action IF had it before
 
-    def _play_land(self, card, zone, card_index, player_index, active, under_land_limit, lands_played):
+    def _play_land(self, card, zone, card_index, player_index, player):
         # TODO ensure [CR 305.2b] and [CR 305.3]; NO effect bypasses "play land" restrictions.
         # ^ It's ok to increase max lands [CR 305.2], or "put" on battlefield [CR 305.4].
         # [CR 115.2a].2
-        if self._met_land_restrictions(active, under_land_limit):
+        if self._met_land_restrictions(player.active, player.under_land_limit()):
             # [CR 115.2a].1
+            # TODO need general zone object?
             zone.remove(card_index)
             self.battlefield[player_index].append(card)
-            lands_played.inc()
+            player.lands_played.inc()
+        # TODO [CR 116.3c] receive priority after cast/act/action IF had it before
 
-    def _activate(self, zone, card_index, mana_pool):
+    # noinspection PyMethodMayBeStatic
+    def _activate(self, zone, card_index, player: "player_mod.Player"):
         # TODO [CR 605.3c] mana ability must resolve completely before activating it again
         card: "card_mod.Card" = zone[card_index]
         if card.ability == "{T}: Add G":
@@ -257,5 +199,5 @@ class Game:
             if card.tap():
                 # [CR 601.2i] successfully activated
                 # [CR 605.3a] resolve immediately after activation
-                mana_pool.add(mt.ManaTypes.G)
+                player.mana_pool.add(mt.ManaTypes.G)
                 # TODO [CR 116.3c] ONLY receive priority after cast/act/action IF had it before
