@@ -17,21 +17,21 @@ class State(abc.ABC):
         pass
 
 
-class InPriority(State):
-    def __init__(self, game: "game_mod.Game"):
-        self._game = game
-        self.index = None
-
-    def run(self, buttons_array):
-        # TODO recall: need to give AI options here and elsewhere
-
-    def next(self, event):
-        if event == ev.Events.PASS:
-            return self._game.pass_priority(self.index)
-        elif event == ev.Events.PLAY:
-            self._game.playing_card.hand = self._game.players[self.index].hand
-            self._game.playing_card.index = self.index
-            return self._game.playing_card
+# class InPriority(State):
+#     def __init__(self, game: "game_mod.Game"):
+#         self._game = game
+#         self.index = None
+#
+#     def run(self, buttons_array):
+#         # TODO recall: need to give AI options here and elsewhere
+#
+#     def next(self, event):
+#         if event == ev.Events.PASS:
+#             return self._game.pass_priority(self.index)
+#         elif event == ev.Events.PLAY:
+#             self._game.playing_card.hand = self._game.players[self.index].hand
+#             self._game.playing_card.index = self.index
+#             return self._game.playing_card
 
 
 class PlayingCard(State):
@@ -77,7 +77,7 @@ class PlayingCard(State):
 
 
 class State(abc.ABC):
-    def __init__(self, signals: collections.deque, signal):
+    def __init__(self, signals: "collections.deque", signal: "sgn.Signal"):
         signals.append(signal)
 
     @abc.abstractmethod
@@ -86,12 +86,16 @@ class State(abc.ABC):
 
 
 class ChoosingPlayer(State):
-    def __init__(self, signals, context):
-        super().__init__(signals, sgn.ChoosePlayer)
+    def __init__(self, signals, game: "game_mod.Game", context):
+        super().__init__(signals, sgn.ChoosePlayer(random.randrange(len(game.players))))
         self._context = context
 
     def process(self, event):
         self._context(event)
+
+class InPriority(State):
+    def process(self, event):
+        pass
 
 
 # class ChoosingStartingPlayer(State):

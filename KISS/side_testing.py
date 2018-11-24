@@ -476,7 +476,36 @@ class Game:
 # ^ https://stackoverflow.com/questions/1527395/constant-instance-variables
 # ^ These guys suggest forcibly using property to avoid set
 # ^ Well, if they should never logically be changed, then we should never logically change them
+# TODO IMPORTANT MEMO: MAKE IT RECURRING:
+# TODO:MEMO, TO MAKE SURE GIVEN PARAM IS EITHER X TYPE OR INITIALIZED:
+# ^ THEN JUST MAKE A TYPE ANNOTATION! Pycharm will warn you if passing the wrong type/class object
+# ^ instead of an actual instance object! YES, IT DOES KNOW THE DIFFERENCE!
+# TODO Do we really need "" for mods around ALL type annotations? Just non-lib/package ones?
+# TODO do we really need to pass game, or can we pass exactly what they need to work?
+# ^ consider choose player, we should just get len of players, no?
+# TODO if subclasses require a common param, or common object containing that param:
+# ^ consider super class automate/force usage of it (though this gives objcets more info than
+# ^ they may need
+# TODO ^ OR ATLEAST FIND A WAY TO SHARE CONSTANT REFERENCE AMONG THEM, IF NEEDED
+# TODO first untap and untap sharing code. any clean way to merge them?
+# TODO clean way to merge code of each step? Seems very repetive...
+# ^ could we use constants to just auto set a bit?
+# * Children auto call parent init if child's def __init__ not defined!
 game = Game()
 game.start_game()
 game.on_input("test")
 game.on_input("test 2")
+
+
+class F:
+    def __init__(self):
+        self.name = "sd"
+
+
+class B(F):
+    def t(self):
+        self.name
+
+
+b = B()
+b.name

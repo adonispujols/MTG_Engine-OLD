@@ -1,5 +1,5 @@
-from new_src import game as game_mod
-from new_src import turn_parts as tp
+from KISS import game as game_mod
+from KISS import turn_parts as tp
 
 
 def first_untap(game: "game_mod.Game", starting_player):

@@ -43,11 +43,11 @@ class Game:
             self.battlefield.append([])
 
     def start_game(self):
-        # [CR 103.1], 1st part of starting game
+        # [CR 103.1], official 1st part of starting game
         for player in self.players:
             player.deck.shuffle()
         # [CR 103.2]
-        self.state = states.ChoosingPlayer(self.finish_starting)
+        self.state = states.ChoosingPlayer(self.signals, self, self.finish_starting)
 
     def finish_starting(self, starting_player):
         # [CR 103.4]
@@ -92,9 +92,8 @@ class Game:
 
     def give_priority(self, index):
         # TODO check for state based actions (perhaps make into separate state)
-        self.in_priority.index = index
-        # XXX can only play cards of player with priority
-        return self.in_priority
+        # XXX right now can only play cards of player with priority
+        # self.state =
 
     def pass_priority(self, index):
         self._passes.inc()
