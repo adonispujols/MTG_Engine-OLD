@@ -386,6 +386,7 @@
 # version using func to process + optional context (func to call next)
 # TODO THIS VERSION DOES NOT EXPLICITLY CONTROL CALL FRAMES!
 # ^ MAKE SURE NOOOO FUNCTION IS RECURSIVELY CALLED BEFORE STATE REACHED!
+# MORE ISSUES WITH MAKING SURE THING STAYS A CERTAIN TYPE
 
 import abc
 
@@ -486,11 +487,16 @@ class Game:
 # TODO if subclasses require a common param, or common object containing that param:
 # ^ consider super class automate/force usage of it (though this gives objcets more info than
 # ^ they may need
-# TODO ^ OR ATLEAST FIND A WAY TO SHARE CONSTANT REFERENCE AMONG THEM, IF NEEDED
+# TODO ^ OR ATLEAST FIND A WAY TO SHARE SAME REFERENCE AMONG THEM, IF NEEDED
 # TODO first untap and untap sharing code. any clean way to merge them?
-# TODO clean way to merge code of each step? Seems very repetive...
+# TODO clean way to merge code of each step? Seems very repetitive...
 # ^ could we use constants to just auto set a bit?
-# * Children auto call parent init if child's def __init__ not defined!
+# TODO make sure ANY needed params/stuff tht happens to be given/done before/after call
+# ARE ALL identified in code somehow! Only leave to documenttion (either formally or in head)
+# ^ if you can't force it otherwise! (without going to any messy/extreme lengths, like name mangling)
+# TODO Just use class names for signal names?
+# ^ Keeping them the same let's us ensure X signal corresponds to X state
+# TODO Should p w/ priority index just be stored in game vs passed around everywhere?
 game = Game()
 game.start_game()
 game.on_input("test")
@@ -499,13 +505,9 @@ game.on_input("test 2")
 
 class F:
     def __init__(self):
-        self.name = "sd"
+        self.name: str = "sd"
 
 
-class B(F):
-    def t(self):
-        self.name
-
-
-b = B()
-b.name
+f = F()
+f.name = 3
+print(type(f.name))

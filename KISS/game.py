@@ -13,10 +13,10 @@ from KISS import states
 
 
 class Game:
+    state: "states.State"
     players: typing.List["player_mod.Player"]
     battlefield: typing.List[typing.List["card_mod.Card"]]
     step_or_phase: "tp.TurnParts"
-    _current_state: "states.State"
 
     def __init__(self, signals: collections.deque):
         self.signals = signals
@@ -57,7 +57,7 @@ class Game:
         # [CR 103.7]
         turn_actions.first_untap(self, starting_player)
 
-    def advance(self, event=None):
+    def advance(self, event):
         # with deck
         # print("State: {}\nP0 HAND:\n{}\nP0 DECK\n{}\nP1 HAND:\n{}\nP1 DECK".format(
         #     self._current_state.__class__.__name__, self.players[0].hand, self.players[0].deck,
@@ -66,10 +66,8 @@ class Game:
         # print("STATE: {}\nP0 HAND:\n{}\nP0 FIELD:\n{}\nP1 HAND:\n{}\nP1 FIELD:\n{}".format(
         #     self._current_state.__class__.__name__, self.players[0].hand, self.battlefield[0],
         #     self.players[1].hand, self.battlefield[1]))
-        self._current_state = self._current_state.next(event)
-        self._current_state.run()
-
-    # main logic
+        self.state.process(event)
+            
     def active_index(self):
         for i, player in enumerate(self.players):
             if player.active:
@@ -92,23 +90,20 @@ class Game:
 
     def give_priority(self, index):
         # TODO check for state based actions (perhaps make into separate state)
-        # XXX right now can only play cards of player with priority
-        # self.state =
+        self.state = states.InPriority(self.signals, self, index)
 
     def pass_priority(self, index):
         self._passes.inc()
         next_player = (index + 1) % len(self.players)
-        # TODO take into account actions + stack being empty.
+        # TODO take into account stack being empty and have actions reset count
         if self.players[next_player].active:
             if int(self._passes) == len(self.players):
                 self._passes.reset()
                 self.empty_mana_pools()
-                # TODO will induce bug if we call while in cleanup step
-                # ^ Could just directly call untap (clearer than a wrap around % here)
-                return self._ON_STEP_OR_PHASE_STATES[self.step_or_phase.value + 1]
+                turn_actions.start_next_step_or_phase(self, self.step_or_phase)
             self._passes.reset()
-        return self.give_priority(next_player)
-    #
+        self.give_priority(index)
+
     # def give_player_priority(self, index):
     #     def user_has_priority():
     #         while True:

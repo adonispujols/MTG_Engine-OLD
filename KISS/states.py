@@ -87,15 +87,22 @@ class State(abc.ABC):
 
 class ChoosingPlayer(State):
     def __init__(self, signals, game: "game_mod.Game", context):
-        super().__init__(signals, sgn.ChoosePlayer(random.randrange(len(game.players))))
+        super().__init__(signals, sgn.ChoosingPlayer(random.randrange(len(game.players))))
         self._context = context
 
     def process(self, event):
         self._context(event)
 
+
 class InPriority(State):
+    def __init__(self, signals, game: "game_mod.Game", index):
+        super().__init__(signals, sgn.InPriority(index))
+        self._game = game
+        self._index = index
+
     def process(self, event):
-        pass
+        if event == ev.Events.PASS:
+            self._game.pass_priority(self._index)
 
 
 # class ChoosingStartingPlayer(State):

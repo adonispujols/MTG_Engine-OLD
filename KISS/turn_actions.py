@@ -93,5 +93,5 @@ _START_METHODS = (_untap, _upkeep, _draw, _pre_combat, _begin_combat,
                   _combat_damage, _end_combat, _post_combat, _end_step, _cleanup)
 
 
-def start_next_step_or_phase(game, index: "tp.TurnParts"):
-    _START_METHODS[index.value + 1](game)
+def start_next_step_or_phase(game, step_or_phase: "tp.TurnParts"):
+    _START_METHODS[step_or_phase.value + 1](game)
