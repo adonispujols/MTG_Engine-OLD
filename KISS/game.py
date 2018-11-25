@@ -10,6 +10,7 @@ from KISS import turn_parts as tp
 from KISS import turn_actions
 from KISS import mana_types as mt
 from KISS import states
+from KISS import signal
 
 
 class Game:
@@ -27,7 +28,7 @@ class Game:
         self._stack = stack.Stack()
         self._passes = passes.Passes()
         self.step_or_phase = None
-        self.state = None
+        # self.state = None
         self.players[0].deck = deck.Deck()
         self.players[0].hand = hand.Hand()
         self.players[1].deck = deck.Deck()
@@ -46,7 +47,8 @@ class Game:
         for player in self.players:
             player.deck.shuffle()
         # [CR 103.2]
-        self.state = states.ChoosingPlayer(self.signals, self, self.finish_starting)
+        # self.state = states.ChoosingPlayer(self.signals, self, self.finish_starting)
+        signal.ChooseStartingPlayer(self.signals, self.finish_starting, len(self.players))
 
     def finish_starting(self, starting_player):
         # [CR 103.4]

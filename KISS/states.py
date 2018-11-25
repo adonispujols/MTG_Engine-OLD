@@ -35,3 +35,5 @@ class InPriority(State):
             self._game.pass_priority(self._index)
         elif event == ev.Events.PLAY.value:
             pass
+
+
