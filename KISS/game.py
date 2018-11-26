@@ -116,6 +116,8 @@ class Game:
             self._play_land(card, zone, card_index, p_index, player)
         elif card.card_type == "Creature":
             self._cast_creature(card, zone, card_index, player)
+        # TODO [CR 116.3c] only receive priority after cast/act/action IF had it before
+        self.give_priority(p_index)
 
     def _cast_creature(self, card, zone, card_index, player):
         # TODO [CR 601.3a] to [CR 601.3b] (exceptions to casting restrictions)
@@ -163,11 +165,13 @@ class Game:
             # [CR 601.2i] successfully cast
         else:
             raise ValueError("ILLEGAL ACTION: Casting spell without proper timing")
-        # TODO [CR 116.3c] receive priority after cast/act/action IF had it before
+        # TODO [CR 116.3c] only receive priority after cast/act/action IF had it before
 
     def _play_land(self, card, zone, card_index, player_index, player):
-        # TODO ensure [CR 305.2b] and [CR 305.3]; NO effect bypasses "play land" restrictions.
+        # TODO ensure [CR 305.2b] and [CR 305.3]; NO effect bypasses these two "play land" restrictions:
+        # A: Needs to be your turn, and B: Have not met max lands played.
         # ^ It's ok to increase max lands [CR 305.2], or "put" on battlefield [CR 305.4].
+        # TODO ^ THUS, "priority/sorcery speed" OR NOT permanent restrictions...
         # [CR 115.2a].2
         if self._met_land_restrictions(player.active, player.under_land_limit()):
             # [CR 115.2a].1
@@ -175,7 +179,8 @@ class Game:
             zone.remove(card_index)
             self.battlefield[player_index].append(card)
             player.lands_played.inc()
-        # TODO [CR 116.3c] receive priority after cast/act/action IF had it before
+        # TODO [CR 116.3c] only receive priority after cast/act/action IF had it before
+        # Not guaranteed with lands...
 
     # noinspection PyMethodMayBeStatic
     def _activate(self, zone, card_index, player: "player_mod.Player"):

@@ -16,9 +16,15 @@ def choose_starting_player(signal: "signal_mod.ChooseStartingPlayer"):
 
 
 def in_priority(signal: "signal_mod.InPriority"):
-    input_ = input("P" + str(signal.index) + " has priority: ")
-    if input_ == "ps":
+    index = signal.index
+    # split into: <action> <param1> <param2> ... etc (if requried)
+    input_ = input("P" + str(index) + " has priority: ").split()
+    if not input_:
         signal.pass_priority()
+    # <action> <zone> <index_in_zone>
+    elif input_[0] == "play":
+        if input_[1] == "hand":
+            signal.play(game.players[index].hand, int(input_[2]) - 1)
 
 
 if __name__ == "__main__":
