@@ -1,13 +1,9 @@
-import collections
 import random
 from KISS import game as game_mod
 
 
 class Signal:
     NAME = None
-
-    def __init__(self, signals: "collections.deque"):
-        signals.append(self)
 
 
 # TODO THREAD SAFETY: APPENDING SIGNAL BEFORE OBJECT COMPLETELY SET UP?!
@@ -16,23 +12,21 @@ class ChooseStartingPlayer(Signal):
     NAME = "ChooseStartingPlayer"
 #         super().__init__(signals, sgn.ChoosingPlayer(random.randrange(len(game.players))))
 
-    def __init__(self, signals, context, players_len):
+    def __init__(self, context, players_len):
         # TODO Make sure in C++ edits after append carry over!
         # ^ I.e., LITERAL object/reference is stored
         self._context = context
         self.index = random.randrange(players_len)
-        super().__init__(signals)
 
     def use_given_index(self, index):
         # XXX could add player index validation here or so (though not needed)
         self._context(index)
 
 
-class ChoosingPlayer(Signal):
+class ChoosePlayer(Signal):
     NAME = "ChoosePlayer"
 
-    def __init__(self, signals, context):
-        super().__init__(signals)
+    def __init__(self, context):
         self._context = context
 
     def use_given_index(self, index):
@@ -42,16 +36,15 @@ class ChoosingPlayer(Signal):
 class InPriority(Signal):
     NAME = "InPriority"
 
-    def __init__(self, signals, game: "game_mod.Game", index):
+    def __init__(self, game: "game_mod.Game", index):
         self._game = game
-        self._index = index
-        super().__init__(signals)
+        self.index = index
 
     # TODO NOTE THAT WE *HAVE* TO WRAP THIS WAY TO REFERENCE GAME INSTANCE!
     # ^ Makes our lives easier, anyways. Like a partial/lambda wrapper for funcs!
     # def pass_priority(self, index):
     def pass_priority(self):
-        self._game.pass_priority(self._index)
+        self._game.pass_priority(self.index)
 
     def play(self, zone, card_index):
-        self._game.play(zone, card_index, self._index)
+        self._game.play(zone, card_index, self.index)

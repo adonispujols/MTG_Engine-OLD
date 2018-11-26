@@ -1,5 +1,4 @@
 import typing
-import collections
 from KISS import stack
 from KISS import hand
 from KISS import passes
@@ -9,18 +8,17 @@ from KISS import card as card_mod
 from KISS import turn_parts as tp
 from KISS import turn_actions
 from KISS import mana_types as mt
-from KISS import states
-from KISS import signal
+from KISS import signals
+from KISS import signal_handler as signal_handler_mod
 
 
 class Game:
-    state: "states.State"
     players: typing.List["player_mod.Player"]
     battlefield: typing.List[typing.List["card_mod.Card"]]
     step_or_phase: "tp.TurnParts"
 
-    def __init__(self, signals: collections.deque):
-        self.signals = signals
+    def __init__(self, signal_handler: "signal_handler_mod.SignalHandler"):
+        self.signal_handler = signal_handler
         self._debug = True
         self._ai_only = False
         self.players = [player_mod.Player(), player_mod.Player()]
@@ -28,7 +26,6 @@ class Game:
         self._stack = stack.Stack()
         self._passes = passes.Passes()
         self.step_or_phase = None
-        # self.state = None
         self.players[0].deck = deck.Deck()
         self.players[0].hand = hand.Hand()
         self.players[1].deck = deck.Deck()
@@ -47,8 +44,7 @@ class Game:
         for player in self.players:
             player.deck.shuffle()
         # [CR 103.2]
-        # self.state = states.ChoosingPlayer(self.signals, self, self.finish_starting)
-        signal.ChooseStartingPlayer(self.signals, self.finish_starting, len(self.players))
+        self.signal_handler.emit_signal(signals.ChooseStartingPlayer(self.finish_starting, len(self.players)))
 
     def finish_starting(self, starting_player):
         # [CR 103.4]
@@ -57,18 +53,6 @@ class Game:
                 player.draw()
         # [CR 103.7]
         turn_actions.first_untap(self, starting_player)
-
-    def advance(self, event):
-        self.state.process(event)
-        # debug helper
-        print("STATE: {}\nSTEP/PHASE: {}\nP0 HAND:\n{}\nP0 FIELD:\n{}\nP1 HAND:\n{}\nP1 FIELD:\n{}".format(
-            self.state.__class__.__name__, self.step_or_phase.name, self.players[0].hand, self.battlefield[0],
-            self.players[1].hand, self.battlefield[1]))
-        if isinstance(self.state, states.InPriority):
-            # noinspection PyUnresolvedReferences
-            print("P w/ Priority: ", self.state._index)
-        # XXX consider using repr/to string or so instead of checking instance or so
-        # ^ more control. No need for ==. Just put index in repr
             
     def active_index(self):
         for i, player in enumerate(self.players):
@@ -92,8 +76,7 @@ class Game:
 
     def give_priority(self, index):
         # TODO check for state based actions (perhaps make into separate state)
-        # self.state = states.InPriority(self.signals, self, index)
-        self.state = states.InPriority
+        self.signal_handler.emit_signal(signals.InPriority(self, index))
 
     def pass_priority(self, index):
         self._passes.inc()
@@ -105,7 +88,10 @@ class Game:
                 self.empty_mana_pools()
                 turn_actions.start_next_step_or_phase(self, self.step_or_phase)
             self._passes.reset()
-        self.give_priority(next_player)
+        # TODO MUST BE ELSE! IF TURN IS SWITCHING, THEN TURN ACTIONS TAKES CARE OF PRIORITY!
+        # ^ WITHOUT THIS ELSE, WE'RE GIVING PRIORITY TWICE! (or overriding effect of turn actions)!!!
+        else:
+            self.give_priority(next_player)
 
     def _in_main_phase(self):
         return (self.step_or_phase == tp.TurnParts.PRECOMBAT_MAIN
