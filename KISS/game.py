@@ -30,6 +30,7 @@ class Game:
         self.players[0].hand = hand.Hand()
         self.players[1].deck = deck.Deck()
         self.players[1].hand = hand.Hand()
+        # SEEMS MORE LIKE INIT DECK THAN PLAYER! (could happen intrinsically)
         for i in range(20):
             self.players[0].deck.push(card_mod.Card("land_1 " + str(i), "Land"))
             self.players[1].deck.push(card_mod.Card("land_2 " + str(i), "Land"))

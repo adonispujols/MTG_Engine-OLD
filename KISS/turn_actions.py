@@ -1,7 +1,7 @@
 from KISS import game as game_mod
 from KISS import turn_parts as tp
 
-
+# How to DRY this up?
 def first_untap(game: "game_mod.Game", starting_player):
     game.step_or_phase = tp.TurnParts.UNTAP
     game.players[starting_player].make_active()
