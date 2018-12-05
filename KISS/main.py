@@ -2,7 +2,6 @@ import collections
 from KISS import game as game_mod
 from KISS import signals as signal_mod
 from KISS import signal_handler as signal_handler_mod
-# REMOVE pympler
 
 
 def debug_info():
